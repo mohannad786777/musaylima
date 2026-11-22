@@ -1151,133 +1151,172 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   .hero-stats { gap: 24px; }
   .header-search-btn span { display: none; }
   
-  /* Mobile: Full height layout with sticky video */
-  .split-view { 
-    display: flex;
-    flex-direction: column;
-    direction: rtl;
-    height: calc(100vh - 50px); /* Full viewport minus nav */
-    overflow: hidden;
+  /* ===== MOBILE FULLVIEW - KOMPLETTE VIEWPORT NUTZUNG ===== */
+  
+  /* Verstecke site-header wenn fullView aktiv */
+  body:has(#fullView[style*="block"]) .site-header {
+    display: none !important;
   }
   
-  /* Video stays at top, doesn't scroll */
-  .video-column { 
-    position: relative;
-    flex-shrink: 0; /* Don't shrink */
-    direction: rtl;
-    width: 100%;
-    z-index: 10;
-  }
-  .video-wrapper {
-    position: relative;
-  }
-  .main-player {
-    height: auto;
-    aspect-ratio: 16 / 9;
-    min-height: 180px;
-    max-height: 220px;
-  }
-  .video-info {
-    padding: 8px 14px;
-  }
-  .video-title {
-    font-size: 13px;
-    line-height: 1.4;
-  }
-  .video-meta {
-    margin-bottom: 4px;
-  }
-  .video-meta .meta-badge {
-    font-size: 10px;
-    padding: 2px 6px;
-  }
-  
-  /* Navigation stays sticky at top */
-  .detail-nav {
-    position: sticky !important;
+  /* FullView füllt gesamten Viewport */
+  #fullView {
+    position: fixed !important;
     top: 0 !important;
-    z-index: 9999 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 10000 !important;
+    background: var(--bg-main);
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
   }
   
-  /* Transcript takes remaining space and scrolls */
-  .transcript-column { 
-    width: 100%;
-    flex: 1; /* Take remaining space */
-    min-height: 0; /* Important for flex scroll */
-    border-left: none;
-    border-top: 1px solid var(--border);
-    border-radius: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  
-  /* Header komplett ausblenden auf Mobile */
-  .transcript-header {
-    display: none !important;
-  }
-  
-  /* Toolbar komplett ausblenden auf Mobile */
-  .transcript-toolbar { 
-    display: none !important;
-  }
-  
-  /* Transcript scroll area takes all available space */
-  .transcript-scroll { 
-    flex: 1;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
-    min-height: 0; /* Important for flex scroll */
-  }
-  .transcript-list {
-    padding: 4px;
-    padding-bottom: 20px;
-  }
-  .transcript-item {
-    padding: 10px 12px;
+  /* Navigation - minimal */
+  #fullView .detail-nav {
+    position: relative !important;
+    top: auto !important;
+    flex-shrink: 0;
+    padding: 6px 0;
+    background: var(--bg-white);
     border-bottom: 1px solid var(--border);
   }
-  .transcript-item-header {
-    margin-bottom: 4px;
-  }
-  .transcript-timestamp {
-    font-size: 10px;
-  }
-  .transcript-item-text {
-    font-size: 14px;
-    line-height: 1.75;
-  }
-  .transcript-jump-container { display: none !important; }
   
-  /* FullView container takes full viewport on mobile */
-  #fullView {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: var(--bg-main);
+  /* Container ohne Padding */
+  #fullView .container {
+    padding: 0 8px;
+    max-width: none;
   }
   
-  /* Section container full width on mobile */
+  /* Section nimmt restlichen Platz */
   #fullView > section.container {
     flex: 1;
-    padding: 0;
-    max-width: none;
+    min-height: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    padding: 0;
   }
   
   #fullContent {
     flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Split-View als Flex-Column */
+  .split-view { 
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    direction: rtl;
+  }
+  
+  /* Video-Bereich - fixe Höhe */
+  .video-column { 
+    flex-shrink: 0;
+    width: 100%;
+    direction: rtl;
+  }
+  
+  .video-wrapper {
+    background: #000;
+  }
+  
+  /* YouTube Player - 16:9 ohne extra Platz */
+  .main-player {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+  
+  .main-player iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Video Info - kompakt */
+  .video-info {
+    padding: 6px 10px;
+    background: var(--forest);
+  }
+  
+  .video-meta {
+    margin-bottom: 2px;
+  }
+  
+  .video-meta .meta-badge {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+  
+  .video-title {
+    font-size: 11px;
+    line-height: 1.3;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* Transkript - nimmt ALLEN restlichen Platz */
+  .transcript-column { 
+    flex: 1;
+    min-height: 0;
+    width: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    border: none;
+    border-radius: 0;
   }
+  
+  .transcript-header { display: none !important; }
+  .transcript-toolbar { display: none !important; }
+  
+  .transcript-scroll { 
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .transcript-list {
+    padding: 0;
+    margin: 0;
+  }
+  
+  .transcript-item {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    margin: 0;
+  }
+  
+  .transcript-item-header {
+    margin-bottom: 3px;
+  }
+  
+  .transcript-timestamp {
+    font-size: 10px;
+  }
+  
+  .transcript-item-text {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  
+  .transcript-jump-container { display: none !important; }
 }
 
 @media (max-width: 768px) {
@@ -1287,7 +1326,9 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   .font-size-controls { display: none; }
   .hero { padding: 40px 0; }
   .hero-title { font-size: 26px; }
-  .hero-stats { flex-direction: column; gap: 12px; }
+  .hero-stats { flex-direction: row; gap: 24px; }
+  .hero-stat-value { font-size: 22px; }
+  .hero-stat-label { font-size: 11px; }
   .search-form { flex-direction: column; }
   .search-btn { width: 100%; }
   .search-options { flex-direction: column; }
@@ -1310,31 +1351,40 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   }
   .detail-nav-inner { 
     flex-direction: row; 
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
   .detail-nav-buttons { 
     justify-content: flex-start;
     flex-shrink: 0;
+    gap: 4px;
+  }
+  .btn-back, .btn-home {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .btn-back svg, .btn-home svg {
+    width: 14px;
+    height: 14px;
   }
   
-  /* Episode Navigation - immer sichtbar auf Mobile */
+  /* Episode Navigation - kompakt auf Mobile */
   .episode-nav-inline {
     order: 0;
-    margin: 0 auto;
+    flex-shrink: 0;
   }
   .episode-nav-inline.visible {
     display: flex !important;
   }
   .ep-nav-info {
-    font-size: 11px;
-    min-width: 40px;
+    font-size: 10px;
+    min-width: 32px;
   }
   .ep-nav-btn {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
   }
   
   /* Font size controls ausblenden auf Mobile */
@@ -1352,11 +1402,14 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
 }
 
 @media (max-width: 480px) {
-  .container { padding: 0 16px; }
+  .container { padding: 0 12px; }
   .hero { padding: 32px 0; }
   .hero-badge { font-size: 12px; }
   .hero-title { font-size: 22px; }
   .hero-subtitle { font-size: 15px; }
+  .hero-stats { gap: 16px; }
+  .hero-stat-value { font-size: 20px; }
+  .hero-stat-label { font-size: 10px; }
   .search-input { padding: 14px 16px; padding-right: 44px; font-size: 16px; }
   .search-btn { padding: 14px 20px; }
   .episode-card { padding: 16px; }
@@ -1368,6 +1421,26 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   .transcript-nav-btns { order: 2; }
   .transcript-actions { order: 3; margin-right: auto; }
   .transcript-scroll { max-height: 400px; }
+  
+  /* Detail Nav noch kompakter */
+  .detail-nav-inner { gap: 4px; }
+  .btn-back, .btn-home {
+    padding: 5px 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+  .btn-back svg, .btn-home svg {
+    width: 12px;
+    height: 12px;
+  }
+  .ep-nav-btn {
+    width: 24px;
+    height: 24px;
+  }
+  .ep-nav-info {
+    font-size: 9px;
+    min-width: 28px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
