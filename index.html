@@ -1918,8 +1918,8 @@ function loadApp() {
       DB = data;
       let totalSegs = 0;
       DB.forEach(ep => totalSegs += ep.segments.length);
-      document.getElementById('totalEpisodes').textContent = DB.length.toLocaleString('ar-SA');
-      document.getElementById('totalSegments').textContent = totalSegs.toLocaleString('ar-SA');
+      document.getElementById('totalEpisodes').textContent = DB.length.toLocaleString('en-US');
+      document.getElementById('totalSegments').textContent = totalSegs.toLocaleString('en-US');
       document.getElementById('loadingOverlay').style.display = 'none';
       initFontSize();
       
