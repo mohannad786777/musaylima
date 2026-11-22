@@ -1544,6 +1544,7 @@ function checkAuth() {
 checkAuth();
 
 // ==================== STATE ====================
+let appLoaded = false;
 let DB = [];
 let listPage = 1;
 const PAGE_SIZE = 50;
@@ -1676,8 +1677,6 @@ function seekToTime(seconds) {
 }
 
 // ==================== LOAD DATA ====================
-let appLoaded = false;
-
 function loadApp() {
   if (appLoaded) return;
   appLoaded = true;
