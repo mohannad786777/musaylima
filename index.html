@@ -154,7 +154,8 @@ body {
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 9999;
+  isolation: isolate;
 }
 .header-inner {
   display: flex;
@@ -628,11 +629,12 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
 /* ==================== EPISODE DETAIL - SPLIT VIEW ==================== */
 .detail-nav {
   position: sticky;
-  top: 64px;
-  z-index: 90;
+  top: 0;
+  z-index: 9998;
   background: var(--bg-white);
   border-bottom: 1px solid var(--border);
   padding: 12px 0;
+  isolation: isolate;
 }
 .detail-nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .detail-nav-buttons { display: flex; gap: 8px; }
@@ -723,6 +725,8 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   gap: 0;
   align-items: start;
   direction: ltr; /* Override RTL for this layout */
+  position: relative;
+  z-index: 1; /* Ensure entire split view stays below header */
 }
 
 /* Video Column (LEFT side) */
@@ -730,12 +734,15 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   position: sticky;
   top: 80px;
   direction: rtl; /* Restore RTL for content */
+  z-index: 1; /* Ensure video stays below header */
 }
 .video-wrapper {
   background: #0a0a0a;
   border: none;
   border-radius: 0;
   overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 .main-player {
   width: 100%;
@@ -743,11 +750,15 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   min-height: 400px;
   max-height: 700px;
   background: #000;
+  position: relative;
+  z-index: 1;
 }
 .main-player iframe {
   width: 100%;
   height: 100%;
   border: none;
+  position: relative;
+  z-index: 1;
 }
 .video-info {
   padding: 16px 24px;
@@ -1139,46 +1150,68 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   .hero { padding: 48px 0; }
   .hero-stats { gap: 24px; }
   .header-search-btn span { display: none; }
+  
+  /* Mobile: Full height layout with sticky video */
   .split-view { 
     display: flex;
     flex-direction: column;
     direction: rtl;
+    height: calc(100vh - 50px); /* Full viewport minus nav */
+    overflow: hidden;
   }
+  
+  /* Video stays at top, doesn't scroll */
   .video-column { 
-    position: relative !important; 
-    top: auto !important;
+    position: relative;
+    flex-shrink: 0; /* Don't shrink */
     direction: rtl;
     width: 100%;
+    z-index: 10;
   }
   .video-wrapper {
-    position: relative !important;
+    position: relative;
   }
   .main-player {
     height: auto;
     aspect-ratio: 16 / 9;
     min-height: 180px;
-    max-height: 250px;
+    max-height: 220px;
   }
   .video-info {
-    padding: 10px 14px;
+    padding: 8px 14px;
   }
   .video-title {
-    font-size: 14px;
+    font-size: 13px;
+    line-height: 1.4;
   }
+  .video-meta {
+    margin-bottom: 4px;
+  }
+  .video-meta .meta-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  
+  /* Navigation stays sticky at top */
   .detail-nav {
-    position: relative !important;
-    top: auto !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 9999 !important;
   }
+  
+  /* Transcript takes remaining space and scrolls */
   .transcript-column { 
     width: 100%;
-    height: auto !important;
-    max-height: none !important;
+    flex: 1; /* Take remaining space */
+    min-height: 0; /* Important for flex scroll */
     border-left: none;
-    border-top: none;
+    border-top: 1px solid var(--border);
     border-radius: 0;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
+  
   /* Header komplett ausblenden auf Mobile */
   .transcript-header {
     display: none !important;
@@ -1189,12 +1222,12 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
     display: none !important;
   }
   
+  /* Transcript scroll area takes all available space */
   .transcript-scroll { 
     flex: 1;
-    max-height: 55vh; 
-    min-height: 280px;
-    overflow-y: scroll !important;
+    overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
+    min-height: 0; /* Important for flex scroll */
   }
   .transcript-list {
     padding: 4px;
@@ -1215,6 +1248,36 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
     line-height: 1.75;
   }
   .transcript-jump-container { display: none !important; }
+  
+  /* FullView container takes full viewport on mobile */
+  #fullView {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-main);
+  }
+  
+  /* Section container full width on mobile */
+  #fullView > section.container {
+    flex: 1;
+    padding: 0;
+    max-width: none;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #fullContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1240,11 +1303,47 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   .directory-search { max-width: none; }
   .directory-item { flex-direction: column; align-items: stretch; gap: 12px; }
   .directory-item-btn { width: 100%; text-align: center; }
-  .detail-nav { top: 56px; }
-  .detail-nav-inner { flex-direction: column; align-items: stretch; }
-  .detail-nav-buttons { justify-content: center; }
-  .video-info { padding: 12px 16px; }
-  .video-title { font-size: 15px; }
+  
+  /* Detail nav stays at very top on mobile */
+  .detail-nav { 
+    top: 0 !important; 
+  }
+  .detail-nav-inner { 
+    flex-direction: row; 
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .detail-nav-buttons { 
+    justify-content: flex-start;
+    flex-shrink: 0;
+  }
+  
+  /* Episode Navigation - immer sichtbar auf Mobile */
+  .episode-nav-inline {
+    order: 0;
+    margin: 0 auto;
+  }
+  .episode-nav-inline.visible {
+    display: flex !important;
+  }
+  .ep-nav-info {
+    font-size: 11px;
+    min-width: 40px;
+  }
+  .ep-nav-btn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  /* Font size controls ausblenden auf Mobile */
+  #fontSizeControlsVideo {
+    display: none;
+  }
+  
+  .video-info { padding: 8px 12px; }
+  .video-title { font-size: 13px; }
   .transcript-toolbar { padding: 8px 12px; gap: 6px; }
   .transcript-item { padding: 12px 16px; }
   .transcript-item-text { font-size: 14px; line-height: 1.9; }
@@ -1317,6 +1416,7 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
 <div id="loadingOverlay" class="loading-overlay">
   <div class="loading-spinner"></div>
   <p class="loading-text">جاري تحميل المكتبة...</p>
+  <p class="loading-progress" id="loadingProgress" style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">0%</p>
 </div>
   <header class="site-header">
     <div class="container">
@@ -1470,12 +1570,12 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
               </button>
             </div>
             <div class="episode-nav-inline" id="episodeNavInline">
-              <button class="ep-nav-btn" id="prevEpisodeBtnTop" onclick="goToPrevSearchResult()" disabled title="الحلقة السابقة">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-              </button>
-              <span class="ep-nav-info" id="episodeNavInfoTop">-</span>
               <button class="ep-nav-btn" id="nextEpisodeBtnTop" onclick="goToNextSearchResult()" disabled title="الحلقة التالية">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+              <span class="ep-nav-info" id="episodeNavInfoTop">-</span>
+              <button class="ep-nav-btn" id="prevEpisodeBtnTop" onclick="goToPrevSearchResult()" disabled title="الحلقة السابقة">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
               </button>
             </div>
             <div class="font-size-controls" id="fontSizeControlsVideo" title="حجم الخط">
@@ -1556,6 +1656,7 @@ let globalSearchResults = []; // Store search results for navigation
 // Player State
 let ytPlayer = null;
 let ytPlayerReady = false;
+let pendingSeekTime = 0;
 let currentEpisode = null;
 let activeSegmentIndex = -1;
 let autoScrollEnabled = true;
@@ -1583,13 +1684,16 @@ function createYouTubePlayer(containerId, videoId, startSeconds = 0) {
     ytPlayerReady = false;
   }
   
+  // Store the start time for seeking after player is ready
+  pendingSeekTime = startSeconds;
+  
   ytPlayer = new YT.Player(containerId, {
     videoId: videoId,
     playerVars: {
       autoplay: 1,
       rel: 0,
       modestbranding: 1,
-      start: startSeconds,
+      start: Math.floor(startSeconds),
       hl: 'ar'
     },
     events: {
@@ -1602,6 +1706,16 @@ function createYouTubePlayer(containerId, videoId, startSeconds = 0) {
 
 function onPlayerReady(event) {
   ytPlayerReady = true;
+  
+  // Seek to the pending time if it was set (more reliable than start parameter)
+  if (pendingSeekTime > 0) {
+    setTimeout(() => {
+      if (ytPlayer && ytPlayerReady) {
+        ytPlayer.seekTo(pendingSeekTime, true);
+      }
+    }, 100);
+  }
+  
   startSyncInterval();
 }
 
@@ -1678,8 +1792,8 @@ function loadApp() {
   if (appLoaded) return;
   appLoaded = true;
   
-  fetch('data.json')
-    .then(r => r.json())
+  // Lade komprimierte GZIP-Version für bessere Performance
+  loadCompressedData()
     .then(data => {
       DB = data;
       let totalSegs = 0;
@@ -1694,6 +1808,68 @@ function loadApp() {
       console.error('Error:', err);
       document.getElementById('loadingOverlay').innerHTML = '<p style="color:#DC2626; font-weight:600; text-align:center;">خطأ في تحميل البيانات<br><small>يرجى استخدام خادم محلي</small></p>';
     });
+}
+
+// Lade und dekomprimiere GZIP-Daten mit Fortschrittsanzeige
+async function loadCompressedData() {
+  const progressEl = document.getElementById('loadingProgress');
+  const updateProgress = (percent) => {
+    if (progressEl) progressEl.textContent = `${Math.round(percent)}%`;
+  };
+  
+  // Versuche zuerst die komprimierte Version
+  try {
+    const response = await fetch('data.json.gz');
+    if (response.ok) {
+      const contentLength = response.headers.get('Content-Length');
+      const total = contentLength ? parseInt(contentLength, 10) : 23000000; // ~22.5MB geschätzt
+      
+      // Lese mit Fortschritt
+      const reader = response.body.getReader();
+      const chunks = [];
+      let received = 0;
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        received += value.length;
+        updateProgress((received / total) * 100);
+      }
+      
+      // Kombiniere chunks
+      const allChunks = new Uint8Array(received);
+      let position = 0;
+      for (const chunk of chunks) {
+        allChunks.set(chunk, position);
+        position += chunk.length;
+      }
+      
+      updateProgress(100);
+      
+      // Browser mit DecompressionStream Support (Chrome 80+, Firefox 113+, Safari 16.4+)
+      if (typeof DecompressionStream !== 'undefined') {
+        const ds = new DecompressionStream('gzip');
+        const blob = new Blob([allChunks]);
+        const decompressedStream = blob.stream().pipeThrough(ds);
+        const decompressedResponse = new Response(decompressedStream);
+        return await decompressedResponse.json();
+      }
+      
+      // Fallback: manuell mit pako dekomprimieren (falls pako geladen)
+      if (typeof pako !== 'undefined') {
+        const decompressed = pako.inflate(allChunks, { to: 'string' });
+        return JSON.parse(decompressed);
+      }
+    }
+  } catch (e) {
+    console.log('GZIP nicht verfügbar, lade unkomprimierte Version...', e);
+  }
+  
+  // Fallback: unkomprimierte Version laden
+  if (progressEl) progressEl.textContent = 'Fallback...';
+  const response = await fetch('data.json');
+  return await response.json();
 }
 
 // ==================== ROUTING ====================
@@ -1865,10 +2041,14 @@ function showFullView(epId, startSeconds = 0, searchQuery = null) {
         break;
       }
     }
-    setTimeout(() => {
-      updateActiveSegmentUI();
-      scrollToSegment(activeSegmentIndex, 'auto');
-    }, 200);
+    // Use requestAnimationFrame to ensure layout is complete before scrolling
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        updateActiveSegmentUI();
+        scrollToSegment(activeSegmentIndex, 'auto');
+        // Note: On mobile, we don't scroll the page - only the transcript container scrolls
+      }, 300);
+    });
   }
   
   // Apply main search query to transcript search if available
@@ -1952,10 +2132,21 @@ function scrollToSegment(index, behavior = 'smooth') {
   if (el && container) {
     const containerRect = container.getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
-    const scrollTop = container.scrollTop + (elRect.top - containerRect.top) - (containerRect.height / 3);
+    
+    // On mobile (non-split view), scroll the element to center of viewport
+    const isMobile = window.innerWidth <= 1024;
+    
+    let scrollTop;
+    if (isMobile) {
+      // On mobile, center the element in the container
+      scrollTop = container.scrollTop + (elRect.top - containerRect.top) - (containerRect.height / 2) + (elRect.height / 2);
+    } else {
+      // On desktop, position at 1/3 from top
+      scrollTop = container.scrollTop + (elRect.top - containerRect.top) - (containerRect.height / 3);
+    }
     
     container.scrollTo({
-      top: scrollTop,
+      top: Math.max(0, scrollTop),
       behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : behavior
     });
   }

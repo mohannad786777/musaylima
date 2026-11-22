@@ -1,20 +1,22 @@
 // Service Worker für Offline-Funktionalität
-const CACHE_NAME = 'musaylima-v3';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'musaylima-v4';
+const STATIC_ASSETS = [
   './musaylima.jpeg',
   './icon-192.png',
   './icon-512.png',
-  './manifest.json',
-  './data.json'
+  './manifest.json'
 ];
 
-// Installation - Cache Assets (aber NICHT index.html)
+// Data cache - separate cache for large data file
+const DATA_CACHE_NAME = 'musaylima-data-v1';
+
+// Installation - Cache static assets only (NOT data.json - it's too large)
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache geöffnet');
-        return cache.addAll(ASSETS_TO_CACHE);
+        console.log('Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
       })
       .then(() => self.skipWaiting())
   );
@@ -26,7 +28,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && cacheName !== DATA_CACHE_NAME) {
             console.log('Alter Cache gelöscht:', cacheName);
             return caches.delete(cacheName);
           }
@@ -43,7 +45,28 @@ self.addEventListener('fetch', event => {
   // YouTube und externe Ressourcen - immer Netzwerk
   if (url.hostname.includes('youtube') || 
       url.hostname.includes('google') ||
-      url.hostname.includes('gstatic')) {
+      url.hostname.includes('gstatic') ||
+      url.hostname.includes('fonts')) {
+    return;
+  }
+  
+  // data.json.gz - CACHE-FIRST mit Background Update (Stale-While-Revalidate)
+  if (url.pathname.endsWith('data.json.gz') || url.pathname.endsWith('data.json')) {
+    event.respondWith(
+      caches.open(DATA_CACHE_NAME).then(cache => {
+        return cache.match(event.request).then(cachedResponse => {
+          const fetchPromise = fetch(event.request).then(networkResponse => {
+            if (networkResponse && networkResponse.status === 200) {
+              cache.put(event.request, networkResponse.clone());
+            }
+            return networkResponse;
+          }).catch(() => null);
+          
+          // Return cached version immediately, update in background
+          return cachedResponse || fetchPromise;
+        });
+      })
+    );
     return;
   }
   
@@ -55,7 +78,6 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          // Erfolg: Cache aktualisieren und Response zurückgeben
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseClone);
@@ -63,7 +85,6 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(() => {
-          // Offline: aus Cache laden
           return caches.match(event.request)
             .then(cached => cached || caches.match('./index.html'));
         })
@@ -71,23 +92,14 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // Andere Dateien (Bilder, JSON, etc.) - CACHE-FIRST
+  // Andere Dateien (Bilder, etc.) - CACHE-FIRST
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
         if (cachedResponse) {
-          // Im Hintergrund aktualisieren
-          fetch(event.request).then(networkResponse => {
-            if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then(cache => {
-                cache.put(event.request, networkResponse.clone());
-              });
-            }
-          }).catch(() => {});
           return cachedResponse;
         }
         
-        // Nicht im Cache - vom Netzwerk holen
         return fetch(event.request).then(networkResponse => {
           if (!networkResponse || networkResponse.status !== 200) {
             return networkResponse;
