@@ -1152,28 +1152,39 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   .header-search-btn span { display: none; }
   
   /* ===== MOBILE FULLVIEW - KOMPLETTE VIEWPORT NUTZUNG ===== */
+  /* NUR wenn fullView sichtbar ist (display: block im inline style) */
   
   /* Verstecke site-header wenn fullView aktiv */
   body:has(#fullView[style*="block"]) .site-header {
     display: none !important;
   }
   
-  /* FullView füllt gesamten Viewport */
-  #fullView {
+  /* Main content braucht kein padding wenn fullView aktiv */
+  body:has(#fullView[style*="block"]) .main-content {
+    padding-bottom: 0 !important;
+  }
+  
+  /* FullView füllt gesamten Viewport - NUR wenn sichtbar */
+  #fullView[style*="block"] {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
+    width: 100% !important;
+    height: 100vh !important;
+    height: 100dvh !important;
     z-index: 10000 !important;
     background: var(--bg-main);
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   /* Navigation - minimal */
-  #fullView .detail-nav {
+  #fullView[style*="block"] .detail-nav {
     position: relative !important;
     top: auto !important;
     flex-shrink: 0;
@@ -1183,31 +1194,32 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   }
   
   /* Container ohne Padding */
-  #fullView .container {
+  #fullView[style*="block"] .container {
     padding: 0 8px;
     max-width: none;
   }
   
   /* Section nimmt restlichen Platz */
-  #fullView > section.container {
+  #fullView[style*="block"] > section.container {
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
-    padding: 0;
+    padding: 0 !important;
+    margin: 0 !important;
   }
   
-  #fullContent {
+  #fullView[style*="block"] #fullContent {
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
   }
   
   /* Split-View als Flex-Column */
-  .split-view { 
+  #fullView[style*="block"] .split-view { 
     display: flex !important;
     flex-direction: column !important;
     flex: 1;
@@ -1216,28 +1228,35 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
     direction: rtl;
   }
   
-  /* Video-Bereich - fixe Höhe */
-  .video-column { 
+  /* Video-Bereich - fixe Höhe, kein Abstand */
+  #fullView[style*="block"] .video-column { 
     flex-shrink: 0;
     width: 100%;
     direction: rtl;
+    position: relative !important;
+    top: auto !important;
+    display: block !important;
   }
   
-  .video-wrapper {
+  #fullView[style*="block"] .video-wrapper {
     background: #000;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
   }
   
   /* YouTube Player - 16:9 ohne extra Platz */
-  .main-player {
+  #fullView[style*="block"] .main-player {
     position: relative;
     width: 100%;
     height: 0;
-    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    padding-bottom: 56.25%;
     min-height: 0 !important;
     max-height: none !important;
+    display: block !important;
   }
   
-  .main-player iframe {
+  #fullView[style*="block"] .main-player iframe {
     position: absolute;
     top: 0;
     left: 0;
@@ -1246,21 +1265,21 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   }
   
   /* Video Info - kompakt */
-  .video-info {
+  #fullView[style*="block"] .video-info {
     padding: 6px 10px;
     background: var(--forest);
   }
   
-  .video-meta {
+  #fullView[style*="block"] .video-meta {
     margin-bottom: 2px;
   }
   
-  .video-meta .meta-badge {
+  #fullView[style*="block"] .video-meta .meta-badge {
     font-size: 9px;
     padding: 1px 4px;
   }
   
-  .video-title {
+  #fullView[style*="block"] .video-title {
     font-size: 11px;
     line-height: 1.3;
     margin: 0;
@@ -1271,52 +1290,56 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   }
   
   /* Transkript - nimmt ALLEN restlichen Platz */
-  .transcript-column { 
-    flex: 1;
-    min-height: 0;
+  #fullView[style*="block"] .transcript-column { 
+    flex: 1 1 0;
+    min-height: 0 !important;
     width: 100%;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     overflow: hidden;
     border: none;
     border-radius: 0;
+    max-height: none !important;
+    height: auto !important;
   }
   
-  .transcript-header { display: none !important; }
-  .transcript-toolbar { display: none !important; }
+  #fullView[style*="block"] .transcript-header { display: none !important; }
+  #fullView[style*="block"] .transcript-toolbar { display: none !important; }
   
-  .transcript-scroll { 
-    flex: 1;
-    min-height: 0;
+  #fullView[style*="block"] .transcript-scroll { 
+    flex: 1 1 0;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: auto !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
   }
   
-  .transcript-list {
+  #fullView[style*="block"] .transcript-list {
     padding: 0;
     margin: 0;
   }
   
-  .transcript-item {
+  #fullView[style*="block"] .transcript-item {
     padding: 8px 10px;
     border-bottom: 1px solid var(--border);
     margin: 0;
   }
   
-  .transcript-item-header {
+  #fullView[style*="block"] .transcript-item-header {
     margin-bottom: 3px;
   }
   
-  .transcript-timestamp {
+  #fullView[style*="block"] .transcript-timestamp {
     font-size: 10px;
   }
   
-  .transcript-item-text {
+  #fullView[style*="block"] .transcript-item-text {
     font-size: 13px;
     line-height: 1.6;
   }
   
-  .transcript-jump-container { display: none !important; }
+  #fullView[style*="block"] .transcript-jump-container { display: none !important; }
 }
 
 @media (max-width: 768px) {
@@ -1420,7 +1443,7 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   .transcript-search-input { width: 100%; order: 1; }
   .transcript-nav-btns { order: 2; }
   .transcript-actions { order: 3; margin-right: auto; }
-  .transcript-scroll { max-height: 400px; }
+  /* ENTFERNT: .transcript-scroll { max-height: 400px; } - überschrieb das flex Layout */
   
   /* Detail Nav noch kompakter */
   .detail-nav-inner { gap: 4px; }
