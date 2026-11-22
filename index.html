@@ -1540,9 +1540,6 @@ function checkAuth() {
   }
 }
 
-// Check on page load
-checkAuth();
-
 // ==================== STATE ====================
 let appLoaded = false;
 let DB = [];
@@ -2553,6 +2550,10 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('Service Worker Fehler:', err));
   });
 }
+
+// ==================== INITIALIZE APP ====================
+// Check auth AFTER all variables are defined
+checkAuth();
 </script>
 </body>
 </html>
