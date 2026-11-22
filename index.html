@@ -1792,8 +1792,8 @@ function loadApp() {
   if (appLoaded) return;
   appLoaded = true;
   
-  // Lade komprimierte GZIP-Version für bessere Performance
-  loadCompressedData()
+  // Lade mit IndexedDB-Cache für schnelles Laden beim zweiten Besuch
+  loadDataWithCache()
     .then(data => {
       DB = data;
       let totalSegs = 0;
@@ -1801,7 +1801,13 @@ function loadApp() {
       document.getElementById('totalEpisodes').textContent = DB.length.toLocaleString('de-DE');
       document.getElementById('totalSegments').textContent = totalSegs.toLocaleString('de-DE');
       document.getElementById('loadingOverlay').style.display = 'none';
-      initFontSize(); // Initialize font size from localStorage
+      initFontSize();
+      
+      // Search Worker im Hintergrund initialisieren
+      if (window.Worker) {
+        initSearchWorker(DB);
+      }
+      
       handleRoute();
     })
     .catch(err => {
@@ -1810,21 +1816,199 @@ function loadApp() {
     });
 }
 
-// Lade und dekomprimiere GZIP-Daten mit Fortschrittsanzeige
-async function loadCompressedData() {
-  const progressEl = document.getElementById('loadingProgress');
-  const updateProgress = (percent) => {
-    if (progressEl) progressEl.textContent = `${Math.round(percent)}%`;
+// ==================== INDEXEDDB + WORKER ====================
+const IDB_NAME = 'musaylima-db';
+const IDB_VERSION = 1;
+const IDB_STORE = 'episodes';
+const VERSION_KEY = 'data-version';
+
+let searchWorker = null;
+let searchWorkerReady = false;
+
+// IndexedDB öffnen
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(IDB_NAME, IDB_VERSION);
+    
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        db.createObjectStore(IDB_STORE, { keyPath: 'id' });
+      }
+    };
+  });
+}
+
+// Daten in IndexedDB speichern
+async function saveToIndexedDB(episodes, version) {
+  const db = await openDatabase();
+  const tx = db.transaction(IDB_STORE, 'readwrite');
+  const store = tx.objectStore(IDB_STORE);
+  
+  // Alte Daten löschen
+  store.clear();
+  
+  // Neue Daten speichern
+  for (const ep of episodes) {
+    store.put(ep);
+  }
+  
+  // Version speichern
+  localStorage.setItem(VERSION_KEY, version);
+  
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+// Daten aus IndexedDB laden
+async function loadFromIndexedDB() {
+  const db = await openDatabase();
+  const tx = db.transaction(IDB_STORE, 'readonly');
+  const store = tx.objectStore(IDB_STORE);
+  const request = store.getAll();
+  
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => { db.close(); resolve(request.result); };
+    request.onerror = () => { db.close(); reject(request.error); };
+  });
+}
+
+// Search Worker initialisieren
+function initSearchWorker(episodes) {
+  if (searchWorker) {
+    searchWorker.terminate();
+  }
+  
+  searchWorker = new Worker('search-worker.js');
+  
+  searchWorker.onmessage = (e) => {
+    const { type, data } = e.data;
+    
+    switch(type) {
+      case 'INIT_COMPLETE':
+        searchWorkerReady = true;
+        console.log('Search worker ready with', data.count, 'episodes');
+        break;
+        
+      case 'SEARCH_RESULTS':
+        handleSearchResults(data);
+        break;
+    }
   };
   
-  // Versuche zuerst die komprimierte Version
+  searchWorker.onerror = (error) => {
+    console.error('Search worker error:', error);
+    searchWorkerReady = false;
+  };
+  
+  // Daten an Worker senden
+  searchWorker.postMessage({ type: 'INIT', data: { episodes } });
+}
+
+// Suchergebnisse vom Worker verarbeiten
+function handleSearchResults(data) {
+  const { results, totalHits, totalEpisodes, searchTime } = data;
+  
+  // Store for episode navigation
+  globalSearchQuery = document.getElementById('mainSearch')?.value?.trim() || '';
+  globalSearchResults = results.map(r => ({ epId: r.id, startSec: r.firstMatchSec }));
+  
+  document.getElementById('resultsSummary').classList.add('active');
+  document.getElementById('epCount').textContent = totalEpisodes;
+  document.getElementById('hitCount').textContent = totalHits;
+  document.getElementById('ctaBanner').style.display = results.length > 0 ? 'none' : 'block';
+  
+  if (results.length === 0) {
+    document.getElementById('results').innerHTML = `
+      <div style="text-align:center; padding:60px 20px; color:var(--text-secondary);">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:16px; opacity:0.5;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <p style="font-size:17px; margin:0 0 8px;">لا توجد نتائج مطابقة</p>
+        <p style="font-size:14px; margin:0;">جرب كلمات مختلفة أو تفعيل البحث الذكي</p>
+      </div>`;
+    return;
+  }
+  
+  const q = globalSearchQuery;
+  const smartRegex = smartModeEnabled ? buildSmartRegex(q) : null;
+  const simpleRegex = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+  
+  document.getElementById('results').innerHTML = results.map(ep => {
+    const snippetsHtml = ep.snippets.map(snip => {
+      let preview = snip.text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      preview = smartModeEnabled && smartRegex ? preview.replace(smartRegex, '<mark>$1</mark>') : preview.replace(simpleRegex, '<mark>$1</mark>');
+      return `
+        <div class="snippet">
+          <div class="snippet-timestamp">
+            <button class="timestamp-btn" onclick="event.stopPropagation(); jumpToEpisode(${ep.id}, ${snip.sec})">
+              ${playIcon} ${snip.ts}
+            </button>
+          </div>
+          <div class="snippet-text">${preview}...</div>
+        </div>
+      `;
+    }).join('');
+    
+    return `
+      <article class="episode-card">
+        <div class="episode-header">
+          <div class="episode-info">
+            <div class="episode-meta">
+              <span class="episode-number">${String(ep.id).padStart(4, '0')}</span>
+              <span class="episode-date">📅 ${ep.date}</span>
+            </div>
+            <h3 class="episode-title">${ep.title}</h3>
+          </div>
+          <div class="episode-actions">
+            <div class="episode-match-count">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              ${ep.hits} مرة
+            </div>
+            <button class="btn-view" onclick="openFullView(${ep.id}, ${ep.firstMatchSec})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+              عرض
+            </button>
+          </div>
+        </div>
+        ${snippetsHtml ? `<div class="episode-snippets">${snippetsHtml}</div>` : ''}
+      </article>
+    `;
+  }).join('');
+  
+  console.log(`Search: ${totalEpisodes} episodes, ${totalHits} hits in ${searchTime.toFixed(0)}ms`);
+}
+
+// Version prüfen und ggf. Update laden
+async function checkForUpdates() {
+  try {
+    const response = await fetch('version.json?t=' + Date.now());
+    if (!response.ok) return null;
+    const serverVersion = await response.json();
+    const localVersion = localStorage.getItem(VERSION_KEY);
+    
+    if (localVersion !== serverVersion.version) {
+      console.log('New version available:', serverVersion.version);
+      return serverVersion;
+    }
+    return null;
+  } catch (e) {
+    console.log('Version check failed:', e);
+    return null;
+  }
+}
+
+// GZIP-Daten laden mit Fortschritt
+async function loadCompressedData(updateProgress) {
   try {
     const response = await fetch('data.json.gz');
     if (response.ok) {
       const contentLength = response.headers.get('Content-Length');
-      const total = contentLength ? parseInt(contentLength, 10) : 23000000; // ~22.5MB geschätzt
+      const total = contentLength ? parseInt(contentLength, 10) : 23000000;
       
-      // Lese mit Fortschritt
       const reader = response.body.getReader();
       const chunks = [];
       let received = 0;
@@ -1834,10 +2018,9 @@ async function loadCompressedData() {
         if (done) break;
         chunks.push(value);
         received += value.length;
-        updateProgress((received / total) * 100);
+        if (updateProgress) updateProgress((received / total) * 100);
       }
       
-      // Kombiniere chunks
       const allChunks = new Uint8Array(received);
       let position = 0;
       for (const chunk of chunks) {
@@ -1845,9 +2028,6 @@ async function loadCompressedData() {
         position += chunk.length;
       }
       
-      updateProgress(100);
-      
-      // Browser mit DecompressionStream Support (Chrome 80+, Firefox 113+, Safari 16.4+)
       if (typeof DecompressionStream !== 'undefined') {
         const ds = new DecompressionStream('gzip');
         const blob = new Blob([allChunks]);
@@ -1855,21 +2035,92 @@ async function loadCompressedData() {
         const decompressedResponse = new Response(decompressedStream);
         return await decompressedResponse.json();
       }
-      
-      // Fallback: manuell mit pako dekomprimieren (falls pako geladen)
-      if (typeof pako !== 'undefined') {
-        const decompressed = pako.inflate(allChunks, { to: 'string' });
-        return JSON.parse(decompressed);
-      }
     }
   } catch (e) {
-    console.log('GZIP nicht verfügbar, lade unkomprimierte Version...', e);
+    console.log('GZIP failed, trying uncompressed...', e);
   }
   
-  // Fallback: unkomprimierte Version laden
-  if (progressEl) progressEl.textContent = 'Fallback...';
   const response = await fetch('data.json');
   return await response.json();
+}
+
+// Haupt-Ladelogik mit IndexedDB
+async function loadDataWithCache() {
+  const progressEl = document.getElementById('loadingProgress');
+  const textEl = document.querySelector('.loading-text');
+  const updateProgress = (percent) => {
+    if (progressEl) progressEl.textContent = `${Math.round(percent)}%`;
+  };
+  const updateText = (text) => {
+    if (textEl) textEl.textContent = text;
+  };
+  
+  try {
+    // Prüfe ob IndexedDB verfügbar
+    if (!window.indexedDB) {
+      throw new Error('IndexedDB not supported');
+    }
+    
+    // Versuche aus IndexedDB zu laden
+    const localVersion = localStorage.getItem(VERSION_KEY);
+    if (localVersion) {
+      updateText('جاري تحميل من الذاكرة...');
+      updateProgress(50);
+      
+      const cachedData = await loadFromIndexedDB();
+      if (cachedData && cachedData.length > 0) {
+        updateProgress(100);
+        console.log('Loaded from IndexedDB:', cachedData.length, 'episodes');
+        
+        // Im Hintergrund auf Updates prüfen
+        checkForUpdates().then(async (newVersion) => {
+          if (newVersion) {
+            console.log('Downloading update in background...');
+            const newData = await loadCompressedData();
+            await saveToIndexedDB(newData, newVersion.version);
+            
+            // Update Banner anzeigen
+            showUpdateBanner();
+          }
+        });
+        
+        return cachedData;
+      }
+    }
+    
+    // Erste Laden oder keine Daten in IndexedDB
+    updateText('جاري تحميل المكتبة...');
+    const data = await loadCompressedData(updateProgress);
+    
+    // In IndexedDB speichern
+    updateText('جاري حفظ البيانات...');
+    const versionResponse = await fetch('version.json').catch(() => null);
+    const version = versionResponse ? (await versionResponse.json()).version : new Date().toISOString().split('T')[0];
+    
+    await saveToIndexedDB(data, version);
+    console.log('Saved to IndexedDB');
+    
+    return data;
+    
+  } catch (e) {
+    console.error('IndexedDB error, falling back to network:', e);
+    updateText('جاري تحميل المكتبة...');
+    return await loadCompressedData(updateProgress);
+  }
+}
+
+// Update Banner anzeigen
+function showUpdateBanner() {
+  const banner = document.createElement('div');
+  banner.id = 'updateBanner';
+  banner.innerHTML = `
+    <div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--forest); color:#fff; padding:12px 24px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.3); display:flex; align-items:center; gap:12px; z-index:10000; font-family:var(--font-heading);">
+      <span>🔄 تحديث جديد متاح</span>
+      <button onclick="location.reload()" style="background:var(--gold); color:var(--forest); border:none; padding:8px 16px; border-radius:8px; font-weight:600; cursor:pointer;">تحديث الآن</button>
+      <button onclick="this.parentElement.parentElement.remove()" style="background:transparent; color:#fff; border:none; padding:4px; cursor:pointer; opacity:0.7;">✕</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
 }
 
 // ==================== ROUTING ====================
@@ -2536,6 +2787,16 @@ function doSearch(fromLive = false) {
   document.getElementById('searchHistory').classList.remove('active');
   if (!fromLive) saveToSearchHistory(q);
 
+  // Verwende Web Worker wenn verfügbar
+  if (searchWorkerReady && searchWorker) {
+    searchWorker.postMessage({ 
+      type: 'SEARCH', 
+      data: { query: q, smartMode: smartModeEnabled } 
+    });
+    return;
+  }
+
+  // Fallback: Suche im Haupt-Thread
   const results = [];
   const normQ = normAr(q);
   const smartRegex = smartModeEnabled ? buildSmartRegex(q) : null;

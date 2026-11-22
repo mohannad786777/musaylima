@@ -1,10 +1,12 @@
 // Service Worker für Offline-Funktionalität
-const CACHE_NAME = 'musaylima-v4';
+const CACHE_NAME = 'musaylima-v5';
 const STATIC_ASSETS = [
   './musaylima.jpeg',
   './icon-192.png',
   './icon-512.png',
-  './manifest.json'
+  './manifest.json',
+  './search-worker.js',
+  './version.json'
 ];
 
 // Data cache - separate cache for large data file
