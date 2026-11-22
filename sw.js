@@ -1,8 +1,6 @@
 // Service Worker für Offline-Funktionalität
-const CACHE_NAME = 'musaylima-v2';
+const CACHE_NAME = 'musaylima-v3';
 const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
   './musaylima.jpeg',
   './icon-192.png',
   './icon-512.png',
@@ -10,7 +8,7 @@ const ASSETS_TO_CACHE = [
   './data.json'
 ];
 
-// Installation - Cache alle wichtigen Dateien
+// Installation - Cache Assets (aber NICHT index.html)
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -38,7 +36,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch - Cache-First für lokale Dateien, Network-First für externe
+// Fetch-Strategie
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   
@@ -49,7 +47,31 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // Lokale Dateien - Cache-First
+  // HTML-Dateien - NETWORK-FIRST (immer neueste Version)
+  if (event.request.destination === 'document' || 
+      url.pathname.endsWith('.html') || 
+      url.pathname === '/' ||
+      url.pathname.endsWith('/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Erfolg: Cache aktualisieren und Response zurückgeben
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Offline: aus Cache laden
+          return caches.match(event.request)
+            .then(cached => cached || caches.match('./index.html'));
+        })
+    );
+    return;
+  }
+  
+  // Andere Dateien (Bilder, JSON, etc.) - CACHE-FIRST
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
@@ -65,7 +87,7 @@ self.addEventListener('fetch', event => {
           return cachedResponse;
         }
         
-        // Nicht im Cache - vom Netzwerk holen und cachen
+        // Nicht im Cache - vom Netzwerk holen
         return fetch(event.request).then(networkResponse => {
           if (!networkResponse || networkResponse.status !== 200) {
             return networkResponse;
@@ -79,16 +101,10 @@ self.addEventListener('fetch', event => {
           return networkResponse;
         });
       })
-      .catch(() => {
-        // Offline und nicht im Cache
-        if (event.request.destination === 'document') {
-          return caches.match('/index.html');
-        }
-      })
   );
 });
 
-// Nachricht vom Client empfangen (z.B. für Cache-Update)
+// Nachricht vom Client empfangen
 self.addEventListener('message', event => {
   if (event.data === 'skipWaiting') {
     self.skipWaiting();
