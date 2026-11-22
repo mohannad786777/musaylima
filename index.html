@@ -1,0 +1,2559 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أرشيف الأكاذيب والمغالطات</title>
+<link rel="icon" type="image/jpeg" href="musaylima.jpeg">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#172B26">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="مسيلمة">
+<link rel="apple-touch-icon" href="musaylima.jpeg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ==================== DESIGN TOKENS ==================== */
+:root {
+  --forest: #172B26;
+  --forest-light: #1E3A33;
+  --gold: #C6A45D;
+  --gold-light: #D4B77A;
+  --gold-soft: rgba(198, 164, 93, 0.12);
+  --bg-main: #F8F7F3;
+  --bg-white: #FFFFFF;
+  --bg-subtle: #F3F2EE;
+  --text-primary: #1F2925;
+  --text-secondary: #68766E;
+  --text-muted: #8A9690;
+  --border: #E8E8E2;
+  --border-light: #F0F0EA;
+  --shadow-sm: 0 1px 3px rgba(23, 43, 38, 0.06);
+  --shadow-md: 0 4px 12px rgba(23, 43, 38, 0.08);
+  --shadow-lg: 0 8px 24px rgba(23, 43, 38, 0.12);
+  --font-heading: 'Cairo', sans-serif;
+  --font-body: 'IBM Plex Sans Arabic', sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --transition: 150ms ease;
+}
+
+/* ==================== PASSWORD SCREEN ==================== */
+.password-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-light) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+.password-screen.hidden { display: none; }
+.password-container {
+  background: var(--bg-white);
+  padding: 48px 40px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+.password-logo {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.password-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.password-title {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--forest);
+  margin: 0 0 8px;
+}
+.password-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 32px;
+}
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.password-input {
+  padding: 14px 18px;
+  font-size: 16px;
+  font-family: var(--font-body);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  transition: var(--transition);
+}
+.password-input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.password-btn {
+  padding: 14px 24px;
+  font-size: 16px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  background: var(--forest);
+  color: var(--gold);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.password-btn:hover {
+  background: var(--forest-light);
+}
+.password-error {
+  color: #c0392b;
+  font-size: 14px;
+  margin: 16px 0 0;
+  min-height: 20px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+  line-height: 1.8;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.site-wrapper { min-height: 100vh; display: flex; flex-direction: column; }
+.container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+.main-content { flex: 1; padding-bottom: 60px; }
+
+/* ==================== HEADER ==================== */
+.site-header {
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  gap: 20px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.brand-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+.brand-text { display: flex; flex-direction: column; }
+.brand-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.brand-subtitle { font-size: 12px; color: var(--text-secondary); line-height: 1.2; }
+.header-nav { display: flex; align-items: center; gap: 8px; }
+.nav-link {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+.nav-link:hover { color: var(--text-primary); background: var(--bg-subtle); }
+.nav-link.active { color: var(--forest); background: var(--gold-soft); }
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Font Size Controls */
+.font-size-controls {
+  display: flex;
+  align-items: center;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+.font-size-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.font-size-btn[data-size="small"] { font-size: 11px; }
+.font-size-btn[data-size="medium"] { font-size: 14px; }
+.font-size-btn[data-size="large"] { font-size: 17px; }
+.font-size-btn:hover { color: var(--text-primary); background: var(--bg-white); }
+.font-size-btn.active { 
+  color: var(--forest); 
+  background: var(--gold-soft); 
+}
+
+/* Font Size Body Classes */
+body.font-small .transcript-item-text { font-size: 13px; line-height: 1.8; }
+body.font-small .episode-title { font-size: 14px; }
+body.font-small .snippet-text { font-size: 13px; }
+
+body.font-medium .transcript-item-text { font-size: 15px; line-height: 2; }
+body.font-medium .episode-title { font-size: 16px; }
+body.font-medium .snippet-text { font-size: 14px; }
+
+body.font-large .transcript-item-text { font-size: 18px; line-height: 2.1; }
+body.font-large .episode-title { font-size: 18px; }
+body.font-large .snippet-text { font-size: 16px; }
+
+.header-search-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.header-search-btn:hover { border-color: var(--gold); background: var(--bg-white); }
+.header-search-btn svg { width: 16px; height: 16px; }
+
+/* ==================== HERO ==================== */
+.hero {
+  background: var(--forest);
+  padding: 60px 0;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23C6A45D' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.6;
+}
+.hero-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(198, 164, 93, 0.15);
+  color: var(--gold);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+.hero-title {
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 16px;
+  line-height: 1.3;
+}
+.hero-subtitle {
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 32px;
+  line-height: 1.7;
+}
+.hero-stats { display: flex; justify-content: center; gap: 32px; margin-bottom: 36px; }
+.hero-stat { text-align: center; }
+.hero-stat-value { font-family: var(--font-heading); font-size: 28px; font-weight: 700; color: var(--gold); }
+.hero-stat-label { font-size: 13px; color: rgba(255, 255, 255, 0.6); }
+
+/* ==================== SEARCH ==================== */
+.search-container {
+  background: var(--bg-white);
+  border-radius: var(--radius-lg);
+  padding: 6px;
+  box-shadow: var(--shadow-lg);
+  max-width: 640px;
+  margin: 0 auto;
+}
+.search-form { display: flex; gap: 8px; }
+.search-input-wrapper { flex: 1; position: relative; }
+.search-input {
+  width: 100%;
+  padding: 16px 20px;
+  padding-right: 48px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  outline: none;
+  transition: var(--transition);
+}
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:focus { background: var(--bg-white); border-color: var(--gold); }
+.search-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.search-icon svg { width: 20px; height: 20px; }
+.search-btn {
+  padding: 16px 28px;
+  background: var(--gold);
+  color: var(--forest);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.search-btn:hover { background: var(--gold-light); }
+.search-options { margin-top: 20px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.search-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 100px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.search-mode-btn:hover { background: rgba(255, 255, 255, 0.15); }
+.search-mode-btn.active { background: var(--gold); border-color: var(--gold); color: var(--forest); }
+.search-mode-btn svg { width: 14px; height: 14px; }
+
+/* ==================== RESULTS ==================== */
+.results-summary {
+  display: none;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 24px;
+  margin-bottom: 24px;
+}
+.results-summary.active {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.results-info { display: flex; align-items: center; gap: 20px; }
+.results-stat { display: flex; align-items: center; gap: 8px; }
+.results-stat-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--gold-soft);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+}
+.results-stat-icon svg { width: 16px; height: 16px; }
+.results-stat-text { display: flex; flex-direction: column; }
+.results-stat-value { font-family: var(--font-heading); font-weight: 700; font-size: 18px; color: var(--text-primary); line-height: 1; }
+.results-stat-label { font-size: 12px; color: var(--text-secondary); }
+.results-clear {
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.results-clear:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+
+/* Search History */
+.search-history {
+  display: none;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+.search-history.active { display: block; }
+.search-history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.search-history-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+.search-history-clear { background: none; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; }
+.search-history-clear:hover { color: #DC2626; }
+.search-history-items { display: flex; flex-wrap: wrap; gap: 8px; }
+.search-history-item {
+  padding: 6px 14px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.search-history-item:hover { background: var(--gold-soft); border-color: var(--gold); color: var(--text-primary); }
+
+/* Episode Cards */
+.episodes-grid { display: flex; flex-direction: column; gap: 16px; }
+.episode-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  transition: var(--transition);
+}
+.episode-card:hover { border-color: var(--gold); box-shadow: var(--shadow-md); }
+.episode-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px; }
+.episode-info { flex: 1; min-width: 0; }
+.episode-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.episode-number {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: var(--forest);
+  color: var(--gold);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 12px;
+}
+.episode-date { font-size: 13px; color: var(--text-muted); }
+.episode-title { font-family: var(--font-heading); font-weight: 700; font-size: 17px; color: var(--text-primary); line-height: 1.5; margin: 0; }
+.episode-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.episode-match-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--gold-soft);
+  border-radius: var(--radius-sm);
+  color: var(--forest);
+  font-weight: 600;
+  font-size: 13px;
+}
+.episode-match-count svg { width: 14px; height: 14px; color: var(--gold); }
+.btn-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--forest);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-view:hover { background: var(--forest-light); }
+.btn-view svg { width: 14px; height: 14px; }
+
+/* Snippets */
+.episode-snippets { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-light); }
+.snippet { display: flex; gap: 12px; padding: 12px 0; }
+.snippet:not(:last-child) { border-bottom: 1px solid var(--border-light); }
+.snippet-timestamp { flex-shrink: 0; }
+.timestamp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  direction: ltr;
+}
+.timestamp-btn:hover { background: var(--forest); border-color: var(--forest); color: #fff; }
+.timestamp-btn svg { width: 12px; height: 12px; color: var(--gold); }
+.timestamp-btn:hover svg { color: var(--gold); }
+.snippet-text { flex: 1; font-size: 15px; line-height: 1.8; color: var(--text-secondary); }
+mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-radius: 3px; font-weight: 500; }
+
+/* ==================== DIRECTORY ==================== */
+.directory-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+.directory-title { font-family: var(--font-heading); font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0; }
+.directory-count { font-size: 14px; color: var(--text-secondary); font-weight: 400; }
+.directory-search { display: flex; gap: 8px; flex: 1; max-width: 400px; }
+.directory-search input {
+  flex: 1;
+  padding: 10px 16px;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: var(--transition);
+}
+.directory-search input:focus { border-color: var(--gold); }
+.directory-list { display: flex; flex-direction: column; gap: 8px; }
+.directory-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+.directory-item:hover { border-color: var(--gold); box-shadow: var(--shadow-sm); }
+.directory-item-info { flex: 1; min-width: 0; }
+.directory-item-title { font-weight: 600; font-size: 15px; color: var(--text-primary); margin: 0 0 4px; line-height: 1.4; }
+.directory-item-meta { font-size: 13px; color: var(--text-muted); }
+.directory-item-btn {
+  padding: 8px 16px;
+  background: var(--forest);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.directory-item-btn:hover { background: var(--forest-light); }
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 32px;
+  padding: 16px;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.pagination-btn {
+  padding: 10px 20px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.pagination-btn:hover:not(:disabled) { background: var(--gold); border-color: var(--gold); color: var(--forest); }
+.pagination-btn:disabled { background: var(--bg-subtle); color: var(--text-muted); cursor: not-allowed; }
+.pagination-info { padding: 0 20px; font-size: 14px; color: var(--text-secondary); }
+
+/* ==================== EPISODE DETAIL - SPLIT VIEW ==================== */
+.detail-nav {
+  position: sticky;
+  top: 64px;
+  z-index: 90;
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 0;
+}
+.detail-nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.detail-nav-buttons { display: flex; gap: 8px; }
+
+/* Episode Navigation Inline (in top nav) */
+.episode-nav-inline {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm);
+}
+.episode-nav-inline.visible {
+  display: flex;
+}
+.ep-nav-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.ep-nav-btn:hover:not(:disabled) {
+  background: var(--gold-soft);
+  border-color: var(--gold);
+  color: var(--forest);
+}
+.ep-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.ep-nav-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.ep-nav-info {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 50px;
+  text-align: center;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-back:hover { background: var(--gold-soft); border-color: var(--gold); }
+.btn-back svg { width: 16px; height: 16px; }
+.btn-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: var(--forest);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-home:hover { background: var(--forest-light); }
+.btn-home svg { width: 16px; height: 16px; }
+
+/* Split View Container - Video LEFT, Transcript RIGHT */
+.split-view {
+  display: grid;
+  grid-template-columns: 1fr 400px; /* Video fills space, transcript fixed width */
+  gap: 0;
+  align-items: start;
+  direction: ltr; /* Override RTL for this layout */
+}
+
+/* Video Column (LEFT side) */
+.video-column {
+  position: sticky;
+  top: 80px;
+  direction: rtl; /* Restore RTL for content */
+}
+.video-wrapper {
+  background: #0a0a0a;
+  border: none;
+  border-radius: 0;
+  overflow: hidden;
+}
+.main-player {
+  width: 100%;
+  height: calc(100vh - 160px);
+  min-height: 400px;
+  max-height: 700px;
+  background: #000;
+}
+.main-player iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.video-info {
+  padding: 16px 24px;
+  background: var(--forest);
+  border: none;
+}
+.video-meta { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  margin-bottom: 6px; 
+  flex-wrap: wrap; 
+}
+.video-meta .meta-badge {
+  background: rgba(198, 164, 93, 0.2);
+  color: var(--gold);
+  border: none;
+}
+.video-title {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Transcript Column (RIGHT side) - Clean minimal design */
+.transcript-column {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 80px);
+  max-height: none;
+  background: var(--bg-white);
+  border: none;
+  border-left: 1px solid var(--border);
+  border-radius: 0;
+  overflow: hidden;
+  direction: rtl; /* Restore RTL for content */
+}
+
+/* Transcript Header - Minimal */
+.transcript-header {
+  padding: 16px 20px;
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.transcript-header-title {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.transcript-header-title svg {
+  width: 18px;
+  height: 18px;
+  color: var(--gold);
+}
+.transcript-segment-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Transcript Toolbar - Compact Single Row */
+.transcript-toolbar {
+  padding: 10px 16px;
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.transcript-search-wrapper {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+.transcript-search-wrapper svg {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.transcript-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  padding-right: 34px;
+  background: var(--bg-subtle);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  transition: var(--transition);
+}
+.transcript-search-input:focus { border-color: var(--gold); background: var(--bg-white); }
+.transcript-search-input::placeholder { color: var(--text-muted); }
+.transcript-nav-btns {
+  display: flex;
+  gap: 2px;
+}
+.transcript-nav-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.transcript-nav-btn:hover:not(:disabled) { background: var(--bg-subtle); color: var(--forest); }
+.transcript-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.transcript-nav-btn svg { width: 14px; height: 14px; }
+
+.transcript-actions { 
+  display: flex; 
+  gap: 2px;
+  margin-right: 4px;
+}
+.transcript-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.transcript-action-btn:hover { background: var(--bg-subtle); color: var(--forest); }
+.transcript-action-btn.active { background: var(--forest); color: #fff; }
+.transcript-action-btn svg { width: 14px; height: 14px; }
+.transcript-action-btn[title]::after { display: none; }
+
+/* Transcript Content */
+.transcript-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  padding: 8px 0;
+}
+.transcript-list {
+  padding: 0;
+}
+
+/* Transcript Item - Minimal Line Design */
+.transcript-item {
+  position: relative;
+  padding: 14px 20px;
+  padding-right: 24px;
+  margin: 0;
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+}
+.transcript-item:last-child {
+  border-bottom: none;
+}
+.transcript-item:hover {
+  background: var(--bg-subtle);
+}
+.transcript-item.active {
+  background: #F8F2E4;
+  border-right: 3px solid var(--gold);
+}
+.transcript-item.search-match {
+  background: transparent;
+}
+.transcript-item.search-match.active {
+  background: #F8F2E4;
+}
+.transcript-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.transcript-timestamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+  background: transparent;
+  color: var(--gold);
+  border-radius: 0;
+  font-size: 12px;
+  font-weight: 700;
+  direction: ltr;
+}
+.transcript-timestamp svg { width: 0; height: 0; display: none; }
+.transcript-item.active .transcript-timestamp {
+  color: var(--forest);
+}
+.transcript-item-text {
+  font-size: 15px;
+  line-height: 2;
+  color: var(--text-primary);
+}
+.transcript-item-text mark {
+  background: linear-gradient(120deg, rgba(198, 164, 93, 0.3) 0%, rgba(198, 164, 93, 0.5) 100%);
+  color: inherit;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* Jump to Current Button - Integrated in Panel */
+.transcript-jump-container {
+  padding: 12px 16px;
+  background: var(--bg-white);
+  border-top: 1px solid var(--border);
+  display: none;
+}
+
+/* Episode Navigation - Next/Prev with same search */
+.episode-nav-container {
+  display: none;
+  padding: 10px 16px;
+  background: var(--forest);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+.episode-nav-container.visible {
+  display: flex;
+}
+.episode-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.episode-nav-btn:hover:not(:disabled) {
+  background: var(--gold);
+  color: var(--forest);
+  border-color: var(--gold);
+}
+.episode-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.episode-nav-btn svg {
+  width: 14px;
+  height: 14px;
+}
+.episode-nav-info {
+  font-size: 11px;
+  color: var(--gold);
+  text-align: center;
+}
+.transcript-jump-container.visible {
+  display: block;
+}
+.jump-to-current-inline {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--forest);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.jump-to-current-inline:hover { 
+  background: var(--forest-light); 
+}
+.jump-to-current-inline svg { 
+  width: 14px; 
+  height: 14px; 
+}
+
+/* Old floating button - hidden */
+.jump-to-current {
+  display: none !important;
+}
+
+/* ==================== CTA BANNER ==================== */
+.cta-banner {
+  background: var(--forest);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  text-align: center;
+  margin-top: 40px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.cta-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23C6A45D' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.cta-banner:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.cta-content { position: relative; z-index: 1; }
+.cta-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  color: var(--forest);
+}
+.cta-icon svg { width: 24px; height: 24px; }
+.cta-title { font-family: var(--font-heading); font-size: 20px; font-weight: 700; color: #fff; margin: 0 0 8px; }
+.cta-subtitle { font-size: 14px; color: rgba(255, 255, 255, 0.7); margin: 0; }
+
+/* ==================== LOADING & FOOTER ==================== */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { margin-top: 20px; font-family: var(--font-heading); font-size: 16px; color: var(--text-secondary); }
+
+.site-footer {
+  background: var(--bg-white);
+  border-top: 1px solid var(--border);
+  padding: 24px 0;
+  margin-top: auto;
+}
+.footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.footer-text { font-size: 13px; color: var(--text-muted); }
+.footer-link { color: var(--gold); text-decoration: none; }
+.footer-link:hover { text-decoration: underline; }
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1024px) {
+  .hero { padding: 48px 0; }
+  .hero-stats { gap: 24px; }
+  .header-search-btn span { display: none; }
+  .split-view { 
+    display: flex;
+    flex-direction: column;
+    direction: rtl;
+  }
+  .video-column { 
+    position: relative !important; 
+    top: auto !important;
+    direction: rtl;
+    width: 100%;
+  }
+  .video-wrapper {
+    position: relative !important;
+  }
+  .main-player {
+    height: auto;
+    aspect-ratio: 16 / 9;
+    min-height: 180px;
+    max-height: 250px;
+  }
+  .video-info {
+    padding: 10px 14px;
+  }
+  .video-title {
+    font-size: 14px;
+  }
+  .detail-nav {
+    position: relative !important;
+    top: auto !important;
+  }
+  .transcript-column { 
+    width: 100%;
+    height: auto !important;
+    max-height: none !important;
+    border-left: none;
+    border-top: none;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Header komplett ausblenden auf Mobile */
+  .transcript-header {
+    display: none !important;
+  }
+  
+  /* Toolbar komplett ausblenden auf Mobile */
+  .transcript-toolbar { 
+    display: none !important;
+  }
+  
+  .transcript-scroll { 
+    flex: 1;
+    max-height: 55vh; 
+    min-height: 280px;
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .transcript-list {
+    padding: 4px;
+    padding-bottom: 20px;
+  }
+  .transcript-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .transcript-item-header {
+    margin-bottom: 4px;
+  }
+  .transcript-timestamp {
+    font-size: 10px;
+  }
+  .transcript-item-text {
+    font-size: 14px;
+    line-height: 1.75;
+  }
+  .transcript-jump-container { display: none !important; }
+}
+
+@media (max-width: 768px) {
+  .header-inner { height: 56px; }
+  .brand-text { display: none; }
+  .header-nav { display: none; }
+  .font-size-controls { display: none; }
+  .hero { padding: 40px 0; }
+  .hero-title { font-size: 26px; }
+  .hero-stats { flex-direction: column; gap: 12px; }
+  .search-form { flex-direction: column; }
+  .search-btn { width: 100%; }
+  .search-options { flex-direction: column; }
+  .search-mode-btn { width: 100%; justify-content: center; }
+  .results-summary.active { flex-direction: column; align-items: stretch; text-align: center; }
+  .results-info { justify-content: center; }
+  .episode-header { flex-direction: column; align-items: stretch; }
+  .episode-actions { justify-content: stretch; }
+  .episode-actions > * { flex: 1; justify-content: center; }
+  .snippet { flex-direction: column; gap: 8px; }
+  .timestamp-btn { align-self: flex-start; }
+  .directory-header { flex-direction: column; align-items: stretch; }
+  .directory-search { max-width: none; }
+  .directory-item { flex-direction: column; align-items: stretch; gap: 12px; }
+  .directory-item-btn { width: 100%; text-align: center; }
+  .detail-nav { top: 56px; }
+  .detail-nav-inner { flex-direction: column; align-items: stretch; }
+  .detail-nav-buttons { justify-content: center; }
+  .video-info { padding: 12px 16px; }
+  .video-title { font-size: 15px; }
+  .transcript-toolbar { padding: 8px 12px; gap: 6px; }
+  .transcript-item { padding: 12px 16px; }
+  .transcript-item-text { font-size: 14px; line-height: 1.9; }
+  .pagination { flex-wrap: wrap; }
+  .jump-to-current-inline { padding: 10px 16px; font-size: 13px; }
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0 16px; }
+  .hero { padding: 32px 0; }
+  .hero-badge { font-size: 12px; }
+  .hero-title { font-size: 22px; }
+  .hero-subtitle { font-size: 15px; }
+  .search-input { padding: 14px 16px; padding-right: 44px; font-size: 16px; }
+  .search-btn { padding: 14px 20px; }
+  .episode-card { padding: 16px; }
+  .episode-title { font-size: 15px; }
+  .cta-banner { padding: 24px 16px; }
+  .cta-title { font-size: 18px; }
+  .transcript-toolbar { flex-wrap: wrap; }
+  .transcript-search-input { width: 100%; order: 1; }
+  .transcript-nav-btns { order: 2; }
+  .transcript-actions { order: 3; margin-right: auto; }
+  .transcript-scroll { max-height: 400px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .btn-view, .btn-back, .btn-home, .search-btn, .timestamp-btn, .pagination-btn, .directory-item-btn, .transcript-action-btn, .transcript-nav-btn { min-height: 44px; }
+  .search-history-item, .search-mode-btn { min-height: 40px; }
+  .transcript-item { min-height: 60px; }
+}
+
+@media print {
+  .site-header, .hero, .search-container, .search-options, .results-summary, .episode-actions, .cta-banner, .detail-nav, .video-column, .transcript-toolbar, .site-footer, .pagination, .jump-to-current { display: none !important; }
+  body { background: white; font-size: 12pt; }
+  .split-view { display: block; }
+  .transcript-column { max-height: none; border: none; }
+  .transcript-scroll { max-height: none; overflow: visible; }
+}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD SCREEN -->
+<div id="passwordScreen" class="password-screen">
+  <div class="password-container">
+    <div class="password-logo">
+      <img src="musaylima.jpeg" alt="مسيلمة" class="password-logo-img">
+    </div>
+    <h1 class="password-title">أرشيف الأكاذيب والمغالطات</h1>
+    <p class="password-subtitle">أدخل كلمة المرور للدخول</p>
+    <form onsubmit="checkPassword(event)" class="password-form">
+      <input type="password" id="passwordInput" class="password-input" placeholder="كلمة المرور" autocomplete="current-password">
+      <button type="submit" class="password-btn">دخول</button>
+    </form>
+    <p id="passwordError" class="password-error"></p>
+  </div>
+</div>
+
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-spinner"></div>
+  <p class="loading-text">جاري تحميل المكتبة...</p>
+</div>
+
+<div class="site-wrapper" id="mainApp" style="display: none;">
+  <header class="site-header">
+    <div class="container">
+      <div class="header-inner">
+        <div class="brand" onclick="goHome()">
+          <div class="brand-icon"><img src="musaylima.jpeg" alt="مسيلمة" class="brand-logo"></div>
+          <div class="brand-text">
+            <span class="brand-title">أرشيف مسيلمة العشاب</span>
+            <span class="brand-subtitle">أرشيف الأكاذيب والمغالطات</span>
+          </div>
+        </div>
+        <nav class="header-nav">
+          <button class="nav-link active" onclick="goHome()">الرئيسية</button>
+          <button class="nav-link" onclick="openListView()">الحلقات</button>
+        </nav>
+        <div class="header-actions">
+          <div class="font-size-controls" title="حجم الخط">
+            <button class="font-size-btn" data-size="small" onclick="setFontSize('small')">ص</button>
+            <button class="font-size-btn active" data-size="medium" onclick="setFontSize('medium')">م</button>
+            <button class="font-size-btn" data-size="large" onclick="setFontSize('large')">ك</button>
+          </div>
+          <button class="header-search-btn" onclick="document.getElementById('mainSearch')?.focus(); goHome();">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span>بحث...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Search View -->
+    <div id="searchView">
+      <section class="hero">
+        <div class="container">
+          <div class="hero-content">
+            <div class="hero-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+              رصد الأكاذيب والمغالطات
+            </div>
+            <h1 class="hero-title">قاعدة بيانات: حلقات مسيلمة العشاب</h1>
+            <p class="hero-subtitle">أرشيف شامل يضم جميع التفريغات النصية لحلقات مسيلمة العشاب لرصد أكاذيبه وتلفيقاته ومغالطاته وتناقضاته، مع تحديد التوقيت بالدقيقة والثانية. التفريغ النصي من تاريخ 04.12.2020 إلى تاريخ 21.11.2026</p>
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <div class="hero-stat-value" id="totalEpisodes">--</div>
+                <div class="hero-stat-label">حلقة</div>
+              </div>
+              <div class="hero-stat">
+                <div class="hero-stat-value" id="totalSegments">--</div>
+                <div class="hero-stat-label">مقطع نصي</div>
+              </div>
+            </div>
+            <div class="search-container">
+              <div class="search-form">
+                <div class="search-input-wrapper">
+                  <input type="text" id="mainSearch" class="search-input" placeholder="ابحث عن موضوع، كلمة، أو عبارة..." 
+                    oninput="handleSearchInput()" 
+                    onkeydown="if(event.key==='Enter') doSearch()"
+                    onfocus="showSearchHistory()">
+                  <div class="search-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  </div>
+                </div>
+                <button class="search-btn" onclick="doSearch()">بحث</button>
+              </div>
+            </div>
+            <div class="search-options">
+              <button type="button" id="smartToggleBtn" class="search-mode-btn active" onclick="toggleSmartMode()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 12 2 2 4-4"/></svg>
+                البحث الذكي (الهمزات والتاءات)
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <section class="container" style="margin-top: 32px;">
+        <div class="search-history" id="searchHistory">
+          <div class="search-history-header">
+            <span class="search-history-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              عمليات البحث السابقة
+            </span>
+            <button class="search-history-clear" onclick="clearSearchHistory()">مسح الكل</button>
+          </div>
+          <div class="search-history-items" id="searchHistoryItems"></div>
+        </div>
+        
+        <div class="results-summary" id="resultsSummary">
+          <div class="results-info">
+            <div class="results-stat">
+              <div class="results-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+              <div class="results-stat-text">
+                <span class="results-stat-value" id="epCount">0</span>
+                <span class="results-stat-label">حلقات مطابقة</span>
+              </div>
+            </div>
+            <div class="results-stat">
+              <div class="results-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="results-stat-text">
+                <span class="results-stat-value" id="hitCount">0</span>
+                <span class="results-stat-label">مرات الذكر</span>
+              </div>
+            </div>
+          </div>
+          <button class="results-clear" onclick="clearSearch()">مسح البحث</button>
+        </div>
+        
+        <div class="episodes-grid" id="results"></div>
+        
+        <div class="cta-banner" id="ctaBanner" onclick="openListView()">
+          <div class="cta-content">
+            <div class="cta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg></div>
+            <h3 class="cta-title">تصفح فهرس الحلقات الكامل</h3>
+            <p class="cta-subtitle">استعرض جميع الحلقات المتاحة في الأرشيف</p>
+          </div>
+        </div>
+      </section>
+    </div>
+    
+    <!-- List View -->
+    <div id="listView" style="display: none;">
+      <section class="container" style="padding-top: 32px;">
+        <div class="directory-header">
+          <div>
+            <h1 class="directory-title">فهرس الحلقات <span class="directory-count" id="listCount"></span></h1>
+          </div>
+          <div class="directory-search">
+            <input type="text" id="listFilter" placeholder="ابحث برقم أو عنوان الحلقة..." oninput="listPage=1; renderList()">
+          </div>
+        </div>
+        <div class="pagination" id="topPager"></div>
+        <div class="directory-list" id="listContainer"></div>
+        <div class="pagination" id="bottomPager"></div>
+      </section>
+    </div>
+    
+    <!-- Episode Detail View with Split Layout -->
+    <div id="fullView" style="display: none;">
+      <div class="detail-nav">
+        <div class="container">
+          <div class="detail-nav-inner">
+            <div class="detail-nav-buttons">
+              <button class="btn-back" onclick="closeFullView()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 19 7-7-7-7"/><path d="M19 12H5"/></svg>
+                رجوع
+              </button>
+              <button class="btn-home" onclick="goHome()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                الرئيسية
+              </button>
+            </div>
+            <div class="episode-nav-inline" id="episodeNavInline">
+              <button class="ep-nav-btn" id="prevEpisodeBtnTop" onclick="goToPrevSearchResult()" disabled title="الحلقة السابقة">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <span class="ep-nav-info" id="episodeNavInfoTop">-</span>
+              <button class="ep-nav-btn" id="nextEpisodeBtnTop" onclick="goToNextSearchResult()" disabled title="الحلقة التالية">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </div>
+            <div class="font-size-controls" id="fontSizeControlsVideo" title="حجم الخط">
+              <button class="font-size-btn" data-size="small" onclick="setFontSize('small')">ص</button>
+              <button class="font-size-btn active" data-size="medium" onclick="setFontSize('medium')">م</button>
+              <button class="font-size-btn" data-size="large" onclick="setFontSize('large')">ك</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <section class="container">
+        <div id="fullContent"></div>
+      </section>
+      
+      <!-- Jump to Current Button -->
+      <button class="jump-to-current" id="jumpToCurrentBtn" onclick="jumpToCurrentSegment()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
+        العودة للموضع الحالي
+      </button>
+    </div>
+  </main>
+  
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-text">أرشيف الأكاذيب والمغالطات</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- YouTube IFrame API -->
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<script>
+// ==================== PASSWORD PROTECTION ====================
+const CORRECT_PASSWORD = 'khadab2026';
+const AUTH_KEY = 'musaylima_auth';
+
+function checkPassword(e) {
+  e.preventDefault();
+  const input = document.getElementById('passwordInput').value;
+  const error = document.getElementById('passwordError');
+  
+  if (input === CORRECT_PASSWORD) {
+    localStorage.setItem(AUTH_KEY, 'true');
+    document.getElementById('passwordScreen').classList.add('hidden');
+    document.getElementById('mainApp').style.display = '';
+    loadApp();
+  } else {
+    error.textContent = 'كلمة المرور غير صحيحة';
+    document.getElementById('passwordInput').value = '';
+  }
+}
+
+function checkAuth() {
+  if (localStorage.getItem(AUTH_KEY) === 'true') {
+    document.getElementById('passwordScreen').classList.add('hidden');
+    document.getElementById('mainApp').style.display = '';
+    loadApp();
+  }
+}
+
+// Check on page load
+checkAuth();
+
+// ==================== STATE ====================
+let DB = [];
+let listPage = 1;
+const PAGE_SIZE = 50;
+let smartModeEnabled = true;
+let searchTimeout = null;
+const SEARCH_HISTORY_KEY = 'fayed_search_history';
+let currentView = 'search';
+let currentEpisodeId = null;
+let globalSearchQuery = ''; // Store the search query for episode navigation
+let globalSearchResults = []; // Store search results for navigation
+
+// Player State
+let ytPlayer = null;
+let ytPlayerReady = false;
+let currentEpisode = null;
+let activeSegmentIndex = -1;
+let autoScrollEnabled = true;
+let userScrolling = false;
+let userScrollTimeout = null;
+let syncInterval = null;
+let transcriptSearchQuery = '';
+let transcriptSearchMatches = [];
+let currentSearchMatchIndex = -1;
+
+// Icons
+const playIcon = '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21"/></svg>';
+const checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 12 2 2 4-4"/></svg>';
+const boltIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
+
+// ==================== YOUTUBE API ====================
+function onYouTubeIframeAPIReady() {
+  console.log('YouTube IFrame API Ready');
+}
+
+function createYouTubePlayer(containerId, videoId, startSeconds = 0) {
+  if (ytPlayer) {
+    ytPlayer.destroy();
+    ytPlayer = null;
+    ytPlayerReady = false;
+  }
+  
+  ytPlayer = new YT.Player(containerId, {
+    videoId: videoId,
+    playerVars: {
+      autoplay: 1,
+      rel: 0,
+      modestbranding: 1,
+      start: startSeconds,
+      hl: 'ar'
+    },
+    events: {
+      onReady: onPlayerReady,
+      onStateChange: onPlayerStateChange,
+      onError: onPlayerError
+    }
+  });
+}
+
+function onPlayerReady(event) {
+  ytPlayerReady = true;
+  startSyncInterval();
+}
+
+function onPlayerStateChange(event) {
+  if (event.data === YT.PlayerState.PLAYING) {
+    startSyncInterval();
+  } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+    // Keep syncing even when paused to show correct position
+  }
+}
+
+function onPlayerError(event) {
+  console.error('YouTube Player Error:', event.data);
+}
+
+function startSyncInterval() {
+  if (syncInterval) clearInterval(syncInterval);
+  syncInterval = setInterval(syncTranscriptWithVideo, 500);
+}
+
+function stopSyncInterval() {
+  if (syncInterval) {
+    clearInterval(syncInterval);
+    syncInterval = null;
+  }
+}
+
+function syncTranscriptWithVideo() {
+  if (!ytPlayer || !ytPlayerReady || !currentEpisode) return;
+  
+  try {
+    const currentTime = ytPlayer.getCurrentTime();
+    const segments = currentEpisode.segments;
+    
+    let newActiveIndex = -1;
+    for (let i = segments.length - 1; i >= 0; i--) {
+      if (currentTime >= segments[i].sec) {
+        newActiveIndex = i;
+        break;
+      }
+    }
+    
+    if (newActiveIndex !== activeSegmentIndex) {
+      activeSegmentIndex = newActiveIndex;
+      updateActiveSegmentUI();
+      
+      if (autoScrollEnabled && !userScrolling && newActiveIndex >= 0) {
+        scrollToSegment(newActiveIndex, 'smooth');
+      }
+    }
+  } catch (e) {
+    // Player may not be ready
+  }
+}
+
+function seekToTime(seconds) {
+  if (ytPlayer && ytPlayerReady) {
+    ytPlayer.seekTo(seconds, true);
+    
+    // Find and set active segment
+    const segments = currentEpisode?.segments || [];
+    for (let i = segments.length - 1; i >= 0; i--) {
+      if (seconds >= segments[i].sec) {
+        activeSegmentIndex = i;
+        updateActiveSegmentUI();
+        break;
+      }
+    }
+  }
+}
+
+// ==================== LOAD DATA ====================
+let appLoaded = false;
+
+function loadApp() {
+  if (appLoaded) return;
+  appLoaded = true;
+  
+  fetch('data.json')
+    .then(r => r.json())
+    .then(data => {
+      DB = data;
+      let totalSegs = 0;
+      DB.forEach(ep => totalSegs += ep.segments.length);
+      document.getElementById('totalEpisodes').textContent = DB.length.toLocaleString('de-DE');
+      document.getElementById('totalSegments').textContent = totalSegs.toLocaleString('de-DE');
+      document.getElementById('loadingOverlay').style.display = 'none';
+      initFontSize(); // Initialize font size from localStorage
+      handleRoute();
+    })
+    .catch(err => {
+      console.error('Error:', err);
+      document.getElementById('loadingOverlay').innerHTML = '<p style="color:#DC2626; font-weight:600; text-align:center;">خطأ في تحميل البيانات<br><small>يرجى استخدام خادم محلي</small></p>';
+    });
+}
+
+// ==================== ROUTING ====================
+function handleRoute() {
+  const hash = window.location.hash || '#search';
+  if (hash === '#search' || hash === '' || hash === '#') {
+    showSearchView();
+  } else if (hash === '#list') {
+    showListView();
+  } else if (hash.startsWith('#episode/')) {
+    const parts = hash.split('/');
+    const epId = parseInt(parts[1]);
+    const seconds = parts[2] ? parseInt(parts[2]) : 0;
+    if (epId) showFullView(epId, seconds);
+    else showSearchView();
+  } else {
+    showSearchView();
+  }
+}
+
+window.addEventListener('popstate', handleRoute);
+
+function navigateTo(route, replace = false) {
+  if (replace) history.replaceState(null, '', route);
+  else history.pushState(null, '', route);
+  handleRoute();
+}
+
+// ==================== VIEWS ====================
+function showSearchView() {
+  cleanup();
+  currentView = 'search';
+  currentEpisodeId = null;
+  document.getElementById('fullView').style.display = 'none';
+  document.getElementById('listView').style.display = 'none';
+  document.getElementById('searchView').style.display = 'block';
+  document.querySelector('.site-header')?.style.setProperty('display', '');
+  updateNavActive('home');
+  window.scrollTo(0, 0);
+}
+
+function showListView() {
+  cleanup();
+  currentView = 'list';
+  currentEpisodeId = null;
+  document.getElementById('searchView').style.display = 'none';
+  document.getElementById('fullView').style.display = 'none';
+  document.getElementById('listView').style.display = 'block';
+  document.querySelector('.site-header')?.style.setProperty('display', '');
+  updateNavActive('list');
+  renderList();
+  window.scrollTo(0, 0);
+}
+
+function showFullView(epId, startSeconds = 0, searchQuery = null) {
+  cleanup();
+  
+  const ep = DB.find(e => e.id === epId);
+  if (!ep) { navigateTo('#search', true); return; }
+
+  currentView = 'episode';
+  currentEpisodeId = epId;
+  currentEpisode = ep;
+  activeSegmentIndex = -1;
+  autoScrollEnabled = true;
+  transcriptSearchQuery = '';
+  transcriptSearchMatches = [];
+  
+  // Get search query from main search if not provided
+  const mainSearchQuery = searchQuery || document.getElementById('mainSearch')?.value?.trim() || '';
+  
+  const videoId = extractVideoId(ep.url);
+  
+  // Build Split View HTML
+  document.getElementById('fullContent').innerHTML = `
+    <div class="split-view">
+      <!-- Video Column (LEFT side) -->
+      <div class="video-column">
+        <div class="video-wrapper">
+          <div class="main-player" id="mainPlayer"></div>
+          <div class="video-info">
+            <div class="video-meta">
+              <span class="meta-badge">#${String(ep.id).padStart(4, '0')}</span>
+              <span class="meta-badge">${ep.date}</span>
+            </div>
+            <h1 class="video-title">${ep.title}</h1>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Transcript Column (RIGHT side) -->
+      <div class="transcript-column">
+        <div class="transcript-header">
+          <h3 class="transcript-header-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            التفريغ النصي
+          </h3>
+          <span class="transcript-segment-count">${ep.segments.length} مقطع</span>
+        </div>
+        <div class="transcript-toolbar">
+          <div class="transcript-search-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" class="transcript-search-input" id="transcriptSearch" 
+              placeholder="بحث..." 
+              oninput="handleTranscriptSearch(this.value)"
+              onkeydown="if(event.key==='Enter') navigateSearchMatch(1)">
+          </div>
+          <div class="transcript-nav-btns">
+            <button class="transcript-nav-btn" onclick="navigateSearchMatch(-1)" title="السابق" id="searchPrevBtn" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>
+            </button>
+            <button class="transcript-nav-btn" onclick="navigateSearchMatch(1)" title="التالي" id="searchNextBtn" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="transcript-actions">
+            <button class="transcript-action-btn ${autoScrollEnabled ? 'active' : ''}" id="autoScrollBtn" onclick="toggleAutoScroll()" title="التتبع التلقائي">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+            </button>
+            <button class="transcript-action-btn" onclick="copyTranscript()" title="نسخ النص">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="transcript-scroll" id="transcriptScroll">
+          <div class="transcript-list" id="transcriptList">
+            ${ep.segments.map((seg, i) => `
+              <div class="transcript-item" id="seg-${i}" data-index="${i}" data-sec="${seg.sec}" onclick="onSegmentClick(${i}, ${seg.sec})">
+                <div class="transcript-item-header">
+                  <span class="transcript-timestamp">${seg.ts}</span>
+                </div>
+                <div class="transcript-item-text">${escapeHtml(seg.txt)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="transcript-jump-container" id="jumpContainer">
+          <button class="jump-to-current-inline" onclick="scrollToActiveSegment()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+            العودة للمقطع الحالي
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Setup scroll detection
+  const scrollContainer = document.getElementById('transcriptScroll');
+  if (scrollContainer) {
+    scrollContainer.addEventListener('scroll', onTranscriptScroll, { passive: true });
+  }
+  
+  document.getElementById('searchView').style.display = 'none';
+  document.getElementById('listView').style.display = 'none';
+  document.getElementById('fullView').style.display = 'block';
+  document.querySelector('.site-header')?.style.setProperty('display', 'none');
+  updateNavActive(null);
+  
+  // Create YouTube player
+  if (videoId && typeof YT !== 'undefined' && YT.Player) {
+    setTimeout(() => createYouTubePlayer('mainPlayer', videoId, startSeconds), 100);
+  }
+  
+  // Set initial active segment based on startSeconds
+  if (startSeconds > 0) {
+    for (let i = ep.segments.length - 1; i >= 0; i--) {
+      if (startSeconds >= ep.segments[i].sec) {
+        activeSegmentIndex = i;
+        break;
+      }
+    }
+    setTimeout(() => {
+      updateActiveSegmentUI();
+      scrollToSegment(activeSegmentIndex, 'auto');
+    }, 200);
+  }
+  
+  // Apply main search query to transcript search if available
+  if (mainSearchQuery && mainSearchQuery.length >= 2) {
+    setTimeout(() => {
+      const transcriptSearchInput = document.getElementById('transcriptSearch');
+      if (transcriptSearchInput) {
+        transcriptSearchInput.value = mainSearchQuery;
+        handleTranscriptSearch(mainSearchQuery);
+      }
+      updateEpisodeNavigation();
+    }, 300);
+  } else {
+    // Clear episode navigation if no search query
+    globalSearchResults = [];
+    updateEpisodeNavigation();
+  }
+  
+  // Sync font size buttons on video page
+  document.querySelectorAll('.font-size-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.size === currentFontSize);
+  });
+  
+  window.scrollTo(0, 0);
+}
+
+function cleanup() {
+  stopSyncInterval();
+  if (ytPlayer) {
+    try { ytPlayer.destroy(); } catch (e) {}
+    ytPlayer = null;
+    ytPlayerReady = false;
+  }
+  currentEpisode = null;
+  activeSegmentIndex = -1;
+  hideJumpButton();
+}
+
+function updateNavActive(view) {
+  document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+  if (view === 'home') document.querySelector('.nav-link:first-child')?.classList.add('active');
+  else if (view === 'list') document.querySelector('.nav-link:last-child')?.classList.add('active');
+}
+
+function goHome() { navigateTo('#search'); }
+function openListView() { navigateTo('#list'); }
+function closeFullView() {
+  if (history.length > 1) history.back();
+  else navigateTo('#search');
+}
+function openFullView(epId, seconds) {
+  navigateTo(typeof seconds === 'number' ? `#episode/${epId}/${seconds}` : `#episode/${epId}`);
+}
+function jumpToEpisode(epId, seconds) { navigateTo(`#episode/${epId}/${seconds}`); }
+
+// ==================== TRANSCRIPT INTERACTION ====================
+function onSegmentClick(index, seconds) {
+  seekToTime(seconds);
+  activeSegmentIndex = index;
+  updateActiveSegmentUI();
+  
+  // Re-enable auto-scroll when user clicks
+  autoScrollEnabled = true;
+  updateAutoScrollButton();
+  hideJumpButton();
+}
+
+function updateActiveSegmentUI() {
+  document.querySelectorAll('.transcript-item').forEach((el, i) => {
+    if (i === activeSegmentIndex) {
+      el.classList.add('active');
+    } else {
+      el.classList.remove('active');
+    }
+  });
+}
+
+function scrollToSegment(index, behavior = 'smooth') {
+  const el = document.getElementById(`seg-${index}`);
+  const container = document.getElementById('transcriptScroll');
+  if (el && container) {
+    const containerRect = container.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const scrollTop = container.scrollTop + (elRect.top - containerRect.top) - (containerRect.height / 3);
+    
+    container.scrollTo({
+      top: scrollTop,
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : behavior
+    });
+  }
+}
+
+function onTranscriptScroll() {
+  // Detect user scrolling
+  if (!userScrolling) {
+    userScrolling = true;
+    
+    // If auto-scroll was enabled and user scrolls, show jump button
+    if (autoScrollEnabled) {
+      autoScrollEnabled = false;
+      updateAutoScrollButton();
+      showJumpButton();
+    }
+  }
+  
+  // Mobile: collapse toolbar when scrolling
+  const toolbar = document.querySelector('.transcript-toolbar');
+  const scrollContainer = document.getElementById('transcriptScroll');
+  if (toolbar && scrollContainer && window.innerWidth <= 1024) {
+    if (scrollContainer.scrollTop > 50) {
+      toolbar.classList.add('collapsed');
+    } else {
+      toolbar.classList.remove('collapsed');
+    }
+  }
+  
+  // Clear previous timeout
+  if (userScrollTimeout) clearTimeout(userScrollTimeout);
+  
+  // After user stops scrolling, mark as not scrolling
+  userScrollTimeout = setTimeout(() => {
+    userScrolling = false;
+  }, 150);
+}
+
+function toggleAutoScroll() {
+  autoScrollEnabled = !autoScrollEnabled;
+  updateAutoScrollButton();
+  
+  if (autoScrollEnabled) {
+    hideJumpButton();
+    if (activeSegmentIndex >= 0) {
+      scrollToSegment(activeSegmentIndex, 'smooth');
+    }
+  }
+}
+
+function updateAutoScrollButton() {
+  const btn = document.getElementById('autoScrollBtn');
+  if (btn) {
+    if (autoScrollEnabled) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
+}
+
+function showJumpButton() {
+  const container = document.getElementById('jumpContainer');
+  if (container) container.classList.add('visible');
+}
+
+function hideJumpButton() {
+  const container = document.getElementById('jumpContainer');
+  if (container) container.classList.remove('visible');
+}
+
+function scrollToActiveSegment() {
+  autoScrollEnabled = true;
+  updateAutoScrollButton();
+  hideJumpButton();
+  
+  if (activeSegmentIndex >= 0) {
+    scrollToSegment(activeSegmentIndex, 'smooth');
+  }
+}
+
+// Alias for backwards compatibility
+function jumpToCurrentSegment() {
+  scrollToActiveSegment();
+}
+
+// ==================== EPISODE NAVIGATION (Next/Prev Search Result) ====================
+function updateEpisodeNavigation() {
+  const inlineNav = document.getElementById('episodeNavInline');
+  const prevBtnTop = document.getElementById('prevEpisodeBtnTop');
+  const nextBtnTop = document.getElementById('nextEpisodeBtnTop');
+  const infoTop = document.getElementById('episodeNavInfoTop');
+  
+  if (!inlineNav || !globalSearchQuery || globalSearchResults.length === 0) {
+    if (inlineNav) inlineNav.classList.remove('visible');
+    return;
+  }
+  
+  // Find current episode index in search results
+  const currentIndex = globalSearchResults.findIndex(r => r.epId === currentEpisodeId);
+  
+  if (currentIndex === -1) {
+    inlineNav.classList.remove('visible');
+    return;
+  }
+  
+  inlineNav.classList.add('visible');
+  
+  // Update buttons
+  if (prevBtnTop) prevBtnTop.disabled = currentIndex === 0;
+  if (nextBtnTop) nextBtnTop.disabled = currentIndex === globalSearchResults.length - 1;
+  
+  // Update info
+  if (infoTop) infoTop.textContent = `${currentIndex + 1} / ${globalSearchResults.length}`;
+}
+
+function goToPrevSearchResult() {
+  if (globalSearchResults.length === 0) return;
+  
+  const currentIndex = globalSearchResults.findIndex(r => r.epId === currentEpisodeId);
+  if (currentIndex <= 0) return;
+  
+  const prevResult = globalSearchResults[currentIndex - 1];
+  showFullView(prevResult.epId, prevResult.startSec || 0, globalSearchQuery);
+}
+
+function goToNextSearchResult() {
+  if (globalSearchResults.length === 0) return;
+  
+  const currentIndex = globalSearchResults.findIndex(r => r.epId === currentEpisodeId);
+  if (currentIndex === -1 || currentIndex >= globalSearchResults.length - 1) return;
+  
+  const nextResult = globalSearchResults[currentIndex + 1];
+  showFullView(nextResult.epId, nextResult.startSec || 0, globalSearchQuery);
+}
+
+// ==================== TRANSCRIPT SEARCH ====================
+function handleTranscriptSearch(query) {
+  transcriptSearchQuery = query.trim();
+  transcriptSearchMatches = [];
+  currentSearchMatchIndex = -1;
+  
+  const items = document.querySelectorAll('.transcript-item');
+  const normQuery = normAr(transcriptSearchQuery);
+  
+  items.forEach((item, index) => {
+    const textEl = item.querySelector('.transcript-item-text');
+    const originalText = currentEpisode?.segments[index]?.txt || '';
+    
+    item.classList.remove('search-match');
+    
+    if (transcriptSearchQuery.length >= 2) {
+      const normText = normAr(originalText);
+      if (normText.includes(normQuery)) {
+        transcriptSearchMatches.push(index);
+        item.classList.add('search-match');
+        
+        // Highlight matches with improved regex
+        textEl.innerHTML = highlightText(originalText, transcriptSearchQuery);
+      } else {
+        textEl.innerHTML = escapeHtml(originalText);
+      }
+    } else {
+      textEl.innerHTML = escapeHtml(originalText);
+    }
+  });
+  
+  // Update info and buttons
+  updateSearchInfo();
+  updateSearchNavButtons();
+  
+  // Auto-navigate to first match
+  if (transcriptSearchMatches.length > 0) {
+    currentSearchMatchIndex = 0;
+    scrollToSegment(transcriptSearchMatches[0], 'smooth');
+  }
+}
+
+// Improved highlight function that works with Arabic text
+function highlightText(text, query) {
+  if (!query || query.length < 2 || !text) return escapeHtml(text);
+  
+  // Build a regex that matches the query with optional tashkeel between letters
+  let pattern = '';
+  const tashkeel = '[\u064B-\u065F\u0670\u0640]*';
+  
+  for (let i = 0; i < query.length; i++) {
+    let ch = query[i];
+    
+    // Handle Arabic letter variations
+    if ('اأإآٱ'.includes(ch)) {
+      pattern += '[اأإآٱ]';
+    } else if ('هة'.includes(ch)) {
+      pattern += '[هة]';
+    } else if ('يى'.includes(ch)) {
+      pattern += '[يى]';
+    } else if ('ءؤئ'.includes(ch)) {
+      pattern += '[ءؤئ]';
+    } else if (/\s/.test(ch)) {
+      // For spaces: allow multiple whitespaces
+      pattern += '\\s+';
+      continue; // Don't add tashkeel after space
+    } else {
+      // Escape special regex chars
+      pattern += ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+    
+    // Allow tashkeel after each letter
+    pattern += tashkeel;
+  }
+  
+  try {
+    const regex = new RegExp(pattern, 'gi');
+    
+    // First find all matches in original text, then build result
+    let result = '';
+    let lastIndex = 0;
+    let match;
+    
+    while ((match = regex.exec(text)) !== null) {
+      // Add escaped text before match
+      result += escapeHtml(text.substring(lastIndex, match.index));
+      // Add marked match (escaped)
+      result += '<mark>' + escapeHtml(match[0]) + '</mark>';
+      lastIndex = regex.lastIndex;
+      
+      // Prevent infinite loops
+      if (match[0].length === 0) {
+        regex.lastIndex++;
+      }
+    }
+    
+    // Add remaining text
+    result += escapeHtml(text.substring(lastIndex));
+    
+    return result;
+  } catch (e) {
+    console.error('Regex error:', e);
+    return escapeHtml(text);
+  }
+}
+
+function navigateSearchMatch(direction) {
+  if (transcriptSearchMatches.length === 0) return;
+  
+  currentSearchMatchIndex += direction;
+  if (currentSearchMatchIndex >= transcriptSearchMatches.length) currentSearchMatchIndex = 0;
+  if (currentSearchMatchIndex < 0) currentSearchMatchIndex = transcriptSearchMatches.length - 1;
+  
+  const targetIndex = transcriptSearchMatches[currentSearchMatchIndex];
+  scrollToSegment(targetIndex, 'smooth');
+  updateSearchInfo();
+}
+
+function updateSearchInfo() {
+  const info = document.getElementById('transcriptInfo');
+  if (!info) return;
+  
+  if (transcriptSearchQuery.length >= 2 && transcriptSearchMatches.length > 0) {
+    info.innerHTML = `<strong>${currentSearchMatchIndex + 1}</strong> من <strong>${transcriptSearchMatches.length}</strong> نتيجة`;
+  } else if (transcriptSearchQuery.length >= 2) {
+    info.innerHTML = `لا توجد نتائج`;
+  } else {
+    info.innerHTML = `<strong>${currentEpisode?.segments.length || 0}</strong> مقطع`;
+  }
+}
+
+function updateSearchNavButtons() {
+  const prevBtn = document.getElementById('searchPrevBtn');
+  const nextBtn = document.getElementById('searchNextBtn');
+  const hasMatches = transcriptSearchMatches.length > 0;
+  
+  if (prevBtn) prevBtn.disabled = !hasMatches;
+  if (nextBtn) nextBtn.disabled = !hasMatches;
+}
+
+// ==================== COPY TRANSCRIPT ====================
+function copyTranscript() {
+  if (!currentEpisode) return;
+  
+  const text = currentEpisode.segments.map(seg => `[${seg.ts}]\n${seg.txt}`).join('\n\n');
+  const fullText = `${currentEpisode.title}\n${currentEpisode.date}\n\n${text}`;
+  
+  navigator.clipboard.writeText(fullText).then(() => {
+    // Show feedback
+    const btn = document.querySelector('.transcript-action-btn[onclick="copyTranscript()"]');
+    if (btn) {
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 12 2 2 4-4"/></svg> تم النسخ';
+      btn.classList.add('active');
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.classList.remove('active');
+      }, 2000);
+    }
+  }).catch(err => {
+    console.error('Copy failed:', err);
+  });
+}
+
+// ==================== FONT SIZE ====================
+const FONT_SIZE_KEY = 'fayed_font_size';
+let currentFontSize = localStorage.getItem(FONT_SIZE_KEY) || 'medium';
+
+function setFontSize(size) {
+  // Remove old class
+  document.body.classList.remove('font-small', 'font-medium', 'font-large');
+  // Add new class
+  document.body.classList.add('font-' + size);
+  currentFontSize = size;
+  
+  // Save preference
+  localStorage.setItem(FONT_SIZE_KEY, size);
+  
+  // Update ALL font size buttons (header + video page)
+  document.querySelectorAll('.font-size-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.size === size);
+  });
+}
+
+function initFontSize() {
+  const saved = localStorage.getItem(FONT_SIZE_KEY) || 'medium';
+  setFontSize(saved);
+}
+
+// ==================== HELPERS ====================
+function extractVideoId(url) {
+  const match = url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\?]+)/);
+  return match ? match[1] : null;
+}
+
+function escapeHtml(text) {
+  return text?.replace(/</g, '&lt;').replace(/>/g, '&gt;') || '';
+}
+
+function normAr(s) {
+  if (!s) return '';
+  return s
+    .replace(/[\u064B-\u065F\u0670\u0640\u200B-\u200F\uFEFF]/g, '')
+    .replace(/[أإآٱ]/g, 'ا')
+    .replace(/[ؤئ]/g, 'ء')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .toLowerCase();
+}
+
+function buildSmartRegex(q) {
+  const clean = normAr(q).trim();
+  if (!clean) return null;
+  let pattern = '';
+  for (let i = 0; i < clean.length; i++) {
+    const ch = clean[i];
+    if (ch === 'ا') pattern += '[اأإآٱ]';
+    else if (ch === 'ه') pattern += '[ةه]';
+    else if (ch === 'ي') pattern += '[يى]';
+    else if (ch === 'ء') pattern += '[ءؤئ]';
+    else pattern += ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    pattern += '[\u064B-\u065F\u0670\u0640]*';
+  }
+  return new RegExp('(' + pattern + ')', 'gi');
+}
+
+function toggleSmartMode() {
+  smartModeEnabled = !smartModeEnabled;
+  const btn = document.getElementById('smartToggleBtn');
+  btn.className = smartModeEnabled ? 'search-mode-btn active' : 'search-mode-btn';
+  btn.innerHTML = smartModeEnabled 
+    ? `${checkIcon} البحث الذكي (الهمزات والتاءات)`
+    : `${boltIcon} البحث السريع`;
+  const q = document.getElementById('mainSearch')?.value.trim();
+  if (q?.length >= 2) doSearch(true);
+}
+
+// ==================== GLOBAL SEARCH ====================
+function handleSearchInput() {
+  const q = document.getElementById('mainSearch').value.trim();
+  if (q.length > 0) document.getElementById('searchHistory').classList.remove('active');
+  if (q.length < 2) return;
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => doSearch(true), 300);
+}
+
+function doSearch(fromLive = false) {
+  const q = document.getElementById('mainSearch').value.trim();
+  if (!q || q.length < 2) return;
+
+  document.getElementById('searchHistory').classList.remove('active');
+  if (!fromLive) saveToSearchHistory(q);
+
+  const results = [];
+  const normQ = normAr(q);
+  const smartRegex = smartModeEnabled ? buildSmartRegex(q) : null;
+  const simpleRegex = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+
+  for (const ep of DB) {
+    let hits = 0;
+    const snippets = [];
+    let firstMatchSec = 0;
+
+    for (const seg of ep.segments) {
+      let matched = false;
+      if (smartModeEnabled) {
+        if (normAr(seg.txt).includes(normQ)) { matched = true; hits += (normAr(seg.txt).split(normQ).length - 1); }
+      } else {
+        if (seg.txt.includes(q)) { matched = true; hits += (seg.txt.split(q).length - 1); }
+      }
+      
+      if (matched) {
+        if (firstMatchSec === 0) firstMatchSec = seg.sec;
+        if (snippets.length < 3) {
+          let preview = seg.txt.substring(0, 200).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          preview = smartModeEnabled && smartRegex ? preview.replace(smartRegex, '<mark>$1</mark>') : preview.replace(simpleRegex, '<mark>$1</mark>');
+          snippets.push({ ts: seg.ts, sec: seg.sec, text: preview });
+        }
+      }
+    }
+
+    if (smartModeEnabled && normAr(ep.title).includes(normQ)) hits++;
+    else if (!smartModeEnabled && ep.title.includes(q)) hits++;
+
+    if (hits > 0) results.push({ ...ep, hits, snippets, firstMatchSec });
+  }
+
+  results.sort((a, b) => b.hits - a.hits);
+  
+  // Store for episode navigation
+  globalSearchQuery = q;
+  globalSearchResults = results.map(r => ({ epId: r.id, startSec: r.firstMatchSec }));
+
+  document.getElementById('resultsSummary').classList.add('active');
+  document.getElementById('epCount').textContent = results.length;
+  document.getElementById('hitCount').textContent = results.reduce((s, r) => s + r.hits, 0);
+  document.getElementById('ctaBanner').style.display = results.length > 0 ? 'none' : 'block';
+
+  if (results.length === 0) {
+    document.getElementById('results').innerHTML = `
+      <div style="text-align:center; padding:60px 20px; color:var(--text-secondary);">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:16px; opacity:0.5;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <p style="font-size:17px; margin:0 0 8px;">لا توجد نتائج مطابقة</p>
+        <p style="font-size:14px; margin:0;">جرب كلمات مختلفة أو تفعيل البحث الذكي</p>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('results').innerHTML = results.slice(0, 50).map(ep => `
+    <article class="episode-card">
+      <div class="episode-header">
+        <div class="episode-info">
+          <div class="episode-meta">
+            <span class="episode-number">${String(ep.id).padStart(4, '0')}</span>
+            <span class="episode-date">📅 ${ep.date}</span>
+          </div>
+          <h3 class="episode-title">${ep.title}</h3>
+        </div>
+        <div class="episode-actions">
+          <div class="episode-match-count">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            ${ep.hits} مرة
+          </div>
+          <button class="btn-view" onclick="openFullView(${ep.id}, ${ep.firstMatchSec})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            عرض
+          </button>
+        </div>
+      </div>
+      ${ep.snippets.length > 0 ? `
+        <div class="episode-snippets">
+          ${ep.snippets.map(snip => `
+            <div class="snippet">
+              <div class="snippet-timestamp">
+                <button class="timestamp-btn" onclick="event.stopPropagation(); jumpToEpisode(${ep.id}, ${snip.sec})">
+                  ${playIcon} ${snip.ts}
+                </button>
+              </div>
+              <div class="snippet-text">${snip.text}...</div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </article>
+  `).join('');
+}
+
+function clearSearch() {
+  document.getElementById('mainSearch').value = '';
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('resultsSummary').classList.remove('active');
+  document.getElementById('ctaBanner').style.display = 'block';
+}
+
+// ==================== SEARCH HISTORY ====================
+function getSearchHistory() {
+  try { return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveToSearchHistory(q) {
+  if (!q || q.length < 2) return;
+  try {
+    let history = getSearchHistory().filter(h => h !== q);
+    history.unshift(q);
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history.slice(0, 10)));
+  } catch {}
+}
+
+function clearSearchHistory() {
+  localStorage.removeItem(SEARCH_HISTORY_KEY);
+  document.getElementById('searchHistory').classList.remove('active');
+}
+
+function showSearchHistory() {
+  const history = getSearchHistory();
+  if (history.length === 0) return;
+  document.getElementById('searchHistoryItems').innerHTML = history.map(q =>
+    `<span class="search-history-item" onclick="searchFromHistory('${q.replace(/'/g, "\\'")}')">${q}</span>`
+  ).join('');
+  document.getElementById('searchHistory').classList.add('active');
+}
+
+function searchFromHistory(q) {
+  document.getElementById('mainSearch').value = q;
+  document.getElementById('searchHistory').classList.remove('active');
+  doSearch();
+}
+
+document.addEventListener('click', e => {
+  const searchContainer = document.querySelector('.search-container');
+  const hist = document.getElementById('searchHistory');
+  if (searchContainer && hist && !searchContainer.contains(e.target) && !hist.contains(e.target)) {
+    hist.classList.remove('active');
+  }
+});
+
+// ==================== EPISODE LIST ====================
+function renderList() {
+  const filter = document.getElementById('listFilter').value.trim().toLowerCase();
+  let filtered = filter ? DB.filter(ep => String(ep.id).includes(filter) || ep.title.toLowerCase().includes(filter)) : DB;
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const start = (listPage - 1) * PAGE_SIZE;
+  const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+  document.getElementById('listCount').textContent = `(${filtered.length} حلقة)`;
+
+  const pagerHtml = `
+    <button class="pagination-btn" onclick="changePage(-1)" ${listPage <= 1 ? 'disabled' : ''}>السابق</button>
+    <span class="pagination-info">صفحة ${listPage} من ${totalPages}</span>
+    <button class="pagination-btn" onclick="changePage(1)" ${listPage >= totalPages ? 'disabled' : ''}>التالي</button>
+  `;
+
+  document.getElementById('topPager').innerHTML = pagerHtml;
+  document.getElementById('bottomPager').innerHTML = pagerHtml;
+
+  document.getElementById('listContainer').innerHTML = pageItems.map(ep => `
+    <div class="directory-item">
+      <div class="directory-item-info">
+        <h3 class="directory-item-title">${String(ep.id).padStart(4, '0')} — ${ep.title}</h3>
+        <p class="directory-item-meta">📅 ${ep.date} · ${ep.segments.length} مقطع</p>
+      </div>
+      <button class="directory-item-btn" onclick="openFullView(${ep.id})">عرض</button>
+    </div>
+  `).join('');
+}
+
+function changePage(delta) {
+  listPage += delta;
+  renderList();
+  window.scrollTo(0, 0);
+}
+
+// ==================== SERVICE WORKER (PWA) ====================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(registration => {
+        console.log('Service Worker registriert:', registration.scope);
+        
+        // Check for updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version available
+              if (confirm('Neue Version verfügbar! Seite neu laden?')) {
+                newWorker.postMessage('skipWaiting');
+                window.location.reload();
+              }
+            }
+          });
+        });
+      })
+      .catch(err => console.log('Service Worker Fehler:', err));
+  });
+}
+</script>
+</body>
+</html>

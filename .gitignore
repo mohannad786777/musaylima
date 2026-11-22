@@ -1,0 +1,24 @@
+# IDE & Editor
+.kiro/
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Development Tools
+convert.js
+*_report.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies (falls später hinzugefügt)
+node_modules/
+
+# Temporary files
+*.tmp
+*.temp
