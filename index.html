@@ -1918,8 +1918,8 @@ function loadApp() {
       DB = data;
       let totalSegs = 0;
       DB.forEach(ep => totalSegs += ep.segments.length);
-      document.getElementById('totalEpisodes').textContent = DB.length.toLocaleString('de-DE');
-      document.getElementById('totalSegments').textContent = totalSegs.toLocaleString('de-DE');
+      document.getElementById('totalEpisodes').textContent = DB.length.toLocaleString('ar-SA');
+      document.getElementById('totalSegments').textContent = totalSegs.toLocaleString('ar-SA');
       document.getElementById('loadingOverlay').style.display = 'none';
       initFontSize();
       
@@ -3103,7 +3103,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
       .then(registration => {
-        console.log('Service Worker registriert:', registration.scope);
+        console.log('Service Worker registered:', registration.scope);
         
         // Check for updates
         registration.addEventListener('updatefound', () => {
@@ -3111,7 +3111,7 @@ if ('serviceWorker' in navigator) {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // New version available
-              if (confirm('Neue Version verfügbar! Seite neu laden?')) {
+              if (confirm('تحديث جديد متاح! هل تريد إعادة تحميل الصفحة؟')) {
                 newWorker.postMessage('skipWaiting');
                 window.location.reload();
               }
@@ -3119,7 +3119,7 @@ if ('serviceWorker' in navigator) {
           });
         });
       })
-      .catch(err => console.log('Service Worker Fehler:', err));
+      .catch(err => console.log('Service Worker error:', err));
   });
 }
 
