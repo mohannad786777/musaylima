@@ -1,5 +1,5 @@
 // Service Worker für Offline-Funktionalität
-const CACHE_NAME = 'musaylima-v5';
+const CACHE_NAME = 'musaylima-v6';
 const STATIC_ASSETS = [
   './musaylima.jpeg',
   './icon-192.png',
