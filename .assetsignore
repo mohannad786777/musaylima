@@ -1,0 +1,3 @@
+# Exclude large uncompressed data files for Cloudflare Pages (25MB limit)
+data.json
+data.min.json
