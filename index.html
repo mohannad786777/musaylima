@@ -253,8 +253,20 @@ body {
 .fs-dec span { font-size: 12px; }
 .fs-inc { font-size: 17px; }
 .fs-inc span { font-size: 13px; }
-.fs-btn:hover:not(:disabled) { background: var(--gold-soft); color: var(--forest); }
-.fs-btn:disabled { opacity: 0.35; cursor: default; }
+.fs-btn { border: 1px solid transparent; outline: none; }
+.fs-btn:hover:not(:disabled),
+.fs-btn:active:not(:disabled),
+.fs-btn.pressed,
+.fs-btn:focus-visible {
+  background: #F6E7BF;
+  border-color: var(--gold);
+  color: var(--forest);
+}
+.fs-btn:disabled {
+  background: #FBF6E9;
+  color: #C9BFA8;
+  cursor: default;
+}
 .fs-pct {
   min-width: 46px;
   padding: 0 2px;
@@ -1602,6 +1614,7 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
     border-color: rgba(255, 255, 255, 0.15);
   }
   .fs-mobile .fs-btn { height: 26px; min-width: 32px; }
+  .fs-mobile .fs-btn:disabled { background: #F3EBD6; color: #B8AC8E; }
   .fs-mobile .fs-pct { height: 26px; color: var(--gold); }
   
   .video-info { padding: 8px 12px; }
@@ -3293,6 +3306,15 @@ function updateFontControls() {
 }
 
 function changeFontScale(dir) { applyFontStep(currentFontStep + dir); }
+
+// Kurzes gelbes Aufleuchten beim Tippen (ohne Abdunkeln)
+document.addEventListener('click', e => {
+  const btn = e.target.closest && e.target.closest('.fs-btn');
+  if (!btn) return;
+  btn.classList.add('pressed');
+  clearTimeout(btn._pressT);
+  btn._pressT = setTimeout(() => btn.classList.remove('pressed'), 300);
+});
 function resetFontScale() { applyFontStep(FONT_STEPS.indexOf(100)); }
 
 function initFontSize() { applyFontStep(loadFontStep()); }
