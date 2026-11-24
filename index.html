@@ -1807,7 +1807,9 @@ let globalSearchResults = []; // Store search results for navigation
 // Player State
 let ytPlayer = null;
 let ytPlayerReady = false;
+let ytApiReady = false; // Track if YouTube API is loaded
 let pendingSeekTime = 0;
+let pendingVideoData = null; // Store video data when API not ready: {containerId, videoId, startSeconds}
 let currentEpisode = null;
 let activeSegmentIndex = -1;
 let autoScrollEnabled = true;
@@ -1826,6 +1828,20 @@ const boltIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 // ==================== YOUTUBE API ====================
 function onYouTubeIframeAPIReady() {
   console.log('YouTube IFrame API Ready');
+  ytApiReady = true;
+  
+  // If there's pending video data, create the player now
+  if (pendingVideoData) {
+    const { containerId, videoId, startSeconds } = pendingVideoData;
+    pendingVideoData = null;
+    
+    // Small delay to ensure DOM is ready
+    setTimeout(() => {
+      if (document.getElementById(containerId)) {
+        createYouTubePlayer(containerId, videoId, startSeconds);
+      }
+    }, 50);
+  }
 }
 
 function createYouTubePlayer(containerId, videoId, startSeconds = 0) {
@@ -1859,12 +1875,45 @@ function onPlayerReady(event) {
   ytPlayerReady = true;
   
   // Seek to the pending time if it was set (more reliable than start parameter)
+  // Use multiple attempts as adblockers can interfere with the initial seek
   if (pendingSeekTime > 0) {
-    setTimeout(() => {
+    const targetTime = pendingSeekTime;
+    let seekAttempts = 0;
+    const maxAttempts = 5;
+    
+    const attemptSeek = () => {
+      seekAttempts++;
       if (ytPlayer && ytPlayerReady) {
-        ytPlayer.seekTo(pendingSeekTime, true);
+        try {
+          const currentTime = ytPlayer.getCurrentTime();
+          // Check if we're close enough to target (within 2 seconds)
+          if (Math.abs(currentTime - targetTime) > 2) {
+            ytPlayer.seekTo(targetTime, true);
+            
+            // Verify seek worked after a short delay
+            if (seekAttempts < maxAttempts) {
+              setTimeout(() => {
+                if (ytPlayer && ytPlayerReady) {
+                  const newTime = ytPlayer.getCurrentTime();
+                  // If still not at target, try again
+                  if (Math.abs(newTime - targetTime) > 2) {
+                    attemptSeek();
+                  }
+                }
+              }, 500);
+            }
+          }
+        } catch (e) {
+          console.warn('Seek attempt failed:', e);
+          if (seekAttempts < maxAttempts) {
+            setTimeout(attemptSeek, 300);
+          }
+        }
       }
-    }, 100);
+    };
+    
+    // Initial delay to let player stabilize
+    setTimeout(attemptSeek, 150);
   }
   
   startSyncInterval();
@@ -1873,6 +1922,26 @@ function onPlayerReady(event) {
 function onPlayerStateChange(event) {
   if (event.data === YT.PlayerState.PLAYING) {
     startSyncInterval();
+    
+    // When video starts playing, verify we're at the correct position
+    // This handles cases where adblocker interfered with initial seek
+    if (pendingSeekTime > 0 && ytPlayer) {
+      setTimeout(() => {
+        if (ytPlayer && ytPlayerReady) {
+          try {
+            const currentTime = ytPlayer.getCurrentTime();
+            // If we're still far from target (more than 3 seconds off), seek again
+            if (Math.abs(currentTime - pendingSeekTime) > 3) {
+              console.log('Video started at wrong position, seeking to:', pendingSeekTime);
+              ytPlayer.seekTo(pendingSeekTime, true);
+            } else {
+              // Reset pendingSeekTime once we've verified position is correct
+              pendingSeekTime = 0;
+            }
+          } catch (e) {}
+        }
+      }, 300);
+    }
   } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
     // Keep syncing even when paused to show correct position
   }
@@ -2450,9 +2519,39 @@ function showFullView(epId, startSeconds = 0, searchQuery = null) {
   document.querySelector('.site-header')?.style.setProperty('display', 'none');
   updateNavActive(null);
   
-  // Create YouTube player
-  if (videoId && typeof YT !== 'undefined' && YT.Player) {
-    setTimeout(() => createYouTubePlayer('mainPlayer', videoId, startSeconds), 100);
+  // Create YouTube player - with fallback for delayed API loading (e.g., with adblockers)
+  if (videoId) {
+    if (typeof YT !== 'undefined' && YT.Player && ytApiReady) {
+      // API is ready, create player immediately
+      setTimeout(() => createYouTubePlayer('mainPlayer', videoId, startSeconds), 100);
+    } else {
+      // API not yet loaded (possibly blocked/delayed by adblocker)
+      // Store pending data - player will be created when API is ready
+      pendingVideoData = { containerId: 'mainPlayer', videoId, startSeconds };
+      console.log('YouTube API not ready yet, waiting for it to load...');
+      
+      // Set up a check in case API was already loaded but ytApiReady wasn't set
+      // (can happen on first load)
+      const checkApiInterval = setInterval(() => {
+        if (typeof YT !== 'undefined' && YT.Player) {
+          clearInterval(checkApiInterval);
+          if (pendingVideoData && document.getElementById('mainPlayer')) {
+            ytApiReady = true;
+            const data = pendingVideoData;
+            pendingVideoData = null;
+            createYouTubePlayer(data.containerId, data.videoId, data.startSeconds);
+          }
+        }
+      }, 200);
+      
+      // Stop checking after 10 seconds if API never loads
+      setTimeout(() => {
+        clearInterval(checkApiInterval);
+        if (pendingVideoData) {
+          console.error('YouTube API failed to load - video cannot be played');
+        }
+      }, 10000);
+    }
   }
   
   // Set initial active segment based on startSeconds
@@ -2504,6 +2603,7 @@ function cleanup() {
     ytPlayer = null;
     ytPlayerReady = false;
   }
+  pendingVideoData = null; // Clear any pending video data
   currentEpisode = null;
   activeSegmentIndex = -1;
   hideJumpButton();
