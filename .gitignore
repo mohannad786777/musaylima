@@ -1,3 +1,8 @@
+# Large data files (Cloudflare Pages has 25MB limit)
+# Keep only the compressed version in Git
+data.json
+data.min.json
+
 # IDE & Editor
 .kiro/
 .vscode/
