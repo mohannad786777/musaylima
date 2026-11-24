@@ -324,13 +324,10 @@ body.font-large .snippet-text { font-size: 16px; }
 .hero-subtitle {
   font-size: 17px;
   color: rgba(255, 255, 255, 0.75);
-  margin: 0 0 32px;
+  margin: 0 0 20px;
   line-height: 1.7;
 }
-.hero-stats { display: flex; justify-content: center; gap: 32px; margin-bottom: 36px; }
-.hero-stat { text-align: center; }
-.hero-stat-value { font-family: var(--font-heading); font-size: 28px; font-weight: 700; color: var(--gold); }
-.hero-stat-label { font-size: 13px; color: rgba(255, 255, 255, 0.6); }
+.hero-count { color: var(--gold); font-weight: 700; direction: ltr; unicode-bidi: isolate; }
 
 /* ==================== SEARCH ==================== */
 .search-container {
@@ -1168,7 +1165,6 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 1024px) {
   .hero { padding: 48px 0; }
-  .hero-stats { gap: 24px; }
   .header-search-btn span { display: none; }
   
   /* ===== MOBILE FULLVIEW - KOMPLETTE VIEWPORT NUTZUNG ===== */
@@ -1377,9 +1373,6 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   .font-size-controls { display: none; }
   .hero { padding: 40px 0; }
   .hero-title { font-size: 26px; }
-  .hero-stats { flex-direction: row; gap: 24px; }
-  .hero-stat-value { font-size: 22px; }
-  .hero-stat-label { font-size: 11px; }
   .search-form { flex-direction: column; }
   .search-btn { width: 100%; }
   .search-options { flex-direction: column; }
@@ -1458,9 +1451,6 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
   .hero-badge { font-size: 12px; }
   .hero-title { font-size: 22px; }
   .hero-subtitle { font-size: 15px; }
-  .hero-stats { gap: 16px; }
-  .hero-stat-value { font-size: 20px; }
-  .hero-stat-label { font-size: 10px; }
   .search-input { padding: 14px 16px; padding-right: 44px; font-size: 16px; }
   .search-btn { padding: 14px 20px; }
   .episode-card { padding: 16px; }
@@ -1582,17 +1572,7 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
               رصد الأكاذيب والمغالطات
             </div>
             <h1 class="hero-title">قاعدة بيانات: حلقات مسيلمة العشاب</h1>
-            <p class="hero-subtitle">أرشيف شامل يضم جميع التفريغات النصية لحلقات مسيلمة العشاب لرصد أكاذيبه وتلفيقاته ومغالطاته وتناقضاته، مع تحديد التوقيت بالدقيقة والثانية. التفريغ النصي من تاريخ 04.12.2020 إلى تاريخ 21.11.2026</p>
-            <div class="hero-stats">
-              <div class="hero-stat">
-                <div class="hero-stat-value" id="totalEpisodes">--</div>
-                <div class="hero-stat-label">حلقة</div>
-              </div>
-              <div class="hero-stat">
-                <div class="hero-stat-value" id="totalSegments">--</div>
-                <div class="hero-stat-label">مقطع نصي</div>
-              </div>
-            </div>
+            <p class="hero-subtitle">أرشيف شامل يضم جميع التفريغات النصية لحلقات مسيلمة العشاب (<span class="hero-count" id="totalEpisodes">2,511</span> حلقة و<span class="hero-count" id="totalSegments">205,337</span> مقطعًا نصيًا) لرصد أكاذيبه وتلفيقاته ومغالطاته وتناقضاته، مع تحديد التوقيت بالدقيقة والثانية. التفريغ النصي من تاريخ 04.12.2020 إلى تاريخ 21.11.2026</p>
             <div class="search-container">
               <div class="search-form">
                 <div class="search-input-wrapper">
@@ -2053,6 +2033,7 @@ function initSearchWorker(episodes) {
 // Suchergebnisse vom Worker verarbeiten
 function handleSearchResults(data) {
   const { results, totalHits, totalEpisodes, searchTime } = data;
+  maybeScrollToResults();
   
   // Store for episode navigation
   globalSearchQuery = document.getElementById('mainSearch')?.value?.trim() || '';
@@ -2957,9 +2938,29 @@ function handleSearchInput() {
   searchTimeout = setTimeout(() => doSearch(true), 300);
 }
 
+let scrollToResultsPending = false;
+
+// Nach explizitem Suchen (Enter/Button) automatisch zur Ergebnisliste scrollen
+function maybeScrollToResults() {
+  if (!scrollToResultsPending) return;
+  scrollToResultsPending = false;
+  requestAnimationFrame(() => {
+    const target = document.getElementById('resultsSummary');
+    if (!target) return;
+    const header = document.querySelector('.site-header');
+    const offset = (header ? header.offsetHeight : 0) + 12;
+    const top = target.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  });
+}
+
 function doSearch(fromLive = false) {
   const q = document.getElementById('mainSearch').value.trim();
   if (!q || q.length < 2) return;
+  if (!fromLive) {
+    scrollToResultsPending = true;
+    document.getElementById('mainSearch').blur();
+  }
 
   document.getElementById('searchHistory').classList.remove('active');
   if (!fromLive) saveToSearchHistory(q);
@@ -3009,6 +3010,7 @@ function doSearch(fromLive = false) {
   }
 
   results.sort((a, b) => b.hits - a.hits);
+  maybeScrollToResults();
   
   // Store for episode navigation
   globalSearchQuery = q;
