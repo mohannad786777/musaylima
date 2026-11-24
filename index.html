@@ -530,7 +530,75 @@ body.font-large .snippet-text { font-size: 16px; }
 .episode-snippets { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-light); }
 .snippet { display: flex; gap: 12px; padding: 12px 0; }
 .snippet:not(:last-child) { border-bottom: 1px solid var(--border-light); }
-.snippet-timestamp { flex-shrink: 0; }
+.snippet-timestamp { flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
+
+/* ==================== EXTERNAL PLAYER ==================== */
+.ext-player-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  -webkit-tap-highlight-color: transparent;
+}
+.ext-player-btn svg { width: 16px; height: 16px; }
+.ext-player-btn:hover { color: var(--forest); border-color: var(--gold); background: var(--gold-soft); }
+.ext-player-btn.small { width: 22px; height: 22px; border: none; opacity: 0.6; }
+.ext-player-btn.small svg { width: 14px; height: 14px; }
+.transcript-item:hover .ext-player-btn.small, .ext-player-btn.small:hover { opacity: 1; }
+
+.ext-modal-backdrop {
+  position: fixed; inset: 0; z-index: 100000;
+  background: rgba(10, 25, 20, 0.55);
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 16px;
+}
+@media (min-width: 600px) { .ext-modal-backdrop { align-items: center; } }
+.ext-modal {
+  width: 100%; max-width: 420px;
+  background: var(--bg-white);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: var(--shadow-lg);
+  padding: 20px;
+  direction: rtl;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+.ext-modal h3 { margin: 0 0 6px; font-family: var(--font-heading); font-size: 18px; color: var(--text-primary); }
+.ext-modal .ext-desc { margin: 0 0 16px; font-size: 13px; line-height: 1.7; color: var(--text-secondary); }
+.ext-modal .ext-time { color: var(--gold); font-weight: 700; direction: ltr; unicode-bidi: isolate; }
+.ext-option {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; margin-bottom: 8px; padding: 12px 14px;
+  background: var(--bg-subtle); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); cursor: pointer;
+  font-family: inherit; text-align: right; color: var(--text-primary);
+  transition: var(--transition);
+}
+.ext-option:hover { border-color: var(--gold); background: var(--gold-soft); }
+.ext-option svg { width: 22px; height: 22px; flex-shrink: 0; color: var(--forest); }
+.ext-option strong { display: block; font-size: 14px; }
+.ext-option small { display: block; font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.ext-remember { display: flex; align-items: center; gap: 8px; margin: 12px 0 4px; font-size: 13px; color: var(--text-primary); cursor: pointer; }
+.ext-remember input { width: 18px; height: 18px; accent-color: var(--forest); }
+.ext-note { margin: 10px 0 0; font-size: 11.5px; line-height: 1.6; color: var(--text-muted); }
+.ext-cancel { display: block; width: 100%; margin-top: 12px; padding: 10px; background: none; border: none; color: var(--text-secondary); font-family: inherit; font-size: 14px; cursor: pointer; }
+
+.ext-toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+  z-index: 100001; display: flex; align-items: center; gap: 12px;
+  background: var(--forest); color: #fff; padding: 10px 16px;
+  border-radius: 100px; font-size: 13px; box-shadow: var(--shadow-lg);
+  direction: rtl; max-width: calc(100vw - 32px);
+}
+.ext-toast button { background: none; border: none; color: var(--gold); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline; }
 .timestamp-btn {
   display: inline-flex;
   align-items: center;
@@ -2115,6 +2183,7 @@ function handleSearchResults(data) {
             <button class="timestamp-btn" onclick="event.stopPropagation(); jumpToEpisode(${ep.id}, ${snip.sec})">
               ${playIcon} ${snip.ts}
             </button>
+            ${extPlayerBtn(ep.id, snip.sec)}
           </div>
           <div class="snippet-text">${preview}...</div>
         </div>
@@ -2419,6 +2488,7 @@ function showFullView(epId, startSeconds = 0, searchQuery = null) {
               <div class="transcript-item" id="seg-${i}" data-index="${i}" data-sec="${seg.sec}" onclick="onSegmentClick(${i}, ${seg.sec})">
                 <div class="transcript-item-header">
                   <span class="transcript-timestamp">${seg.ts}</span>
+                  ${extPlayerBtn(ep.id, seg.sec, true)}
                   <button class="segment-copy-btn" onclick="copySegment(${i}, this, event)" title="نسخ المقطع" aria-label="نسخ المقطع">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                   </button>
@@ -2876,6 +2946,130 @@ function copyTranscript(sourceBtn) {
   });
 }
 
+// ==================== EXTERNAL PLAYER (Apps auf dem Gerät) ====================
+const EXT_PLAYER_KEY = 'musaylima_ext_player';
+const EXT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m10 9 5 3-5 3z" fill="currentColor"/></svg>';
+const IS_ANDROID = /Android/i.test(navigator.userAgent);
+
+function extPlayerBtn(epId, sec, small = false) {
+  return `<button class="ext-player-btn${small ? ' small' : ''}" onclick="openExternalPlayer(${epId}, ${sec}, event)" title="تشغيل في تطبيق مشغّل على جهازك من هذه الدقيقة" aria-label="تشغيل في تطبيق خارجي">${EXT_ICON}</button>`;
+}
+
+function getExtPlayerPref() {
+  try { return localStorage.getItem(EXT_PLAYER_KEY); } catch (e) { return null; }
+}
+function setExtPlayerPref(v) {
+  try { v ? localStorage.setItem(EXT_PLAYER_KEY, v) : localStorage.removeItem(EXT_PLAYER_KEY); } catch (e) {}
+}
+
+function fmtSec(sec) {
+  sec = Math.floor(sec || 0);
+  const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+  return [h, m, s].map(n => String(n).padStart(2, '0')).join(':');
+}
+
+function extLinks(epId, sec) {
+  const ep = (typeof DB !== 'undefined' && DB) ? DB.find(e => e.id === epId) : null;
+  const vid = ep ? extractVideoId(ep.url) : null;
+  if (!vid) return null;
+  const t = Math.max(0, Math.floor(sec || 0));
+  const web = `https://www.youtube.com/watch?v=${vid}&t=${t}s`;
+  // Android: eigenes Schema -> System zeigt "Öffnen mit" (Nur einmal / Immer)
+  const android = `intent://www.youtube.com/watch?v=${vid}&t=${t}s#Intent;scheme=vnd.youtube;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(web)};end`;
+  return { web, android, title: ep.title || '' };
+}
+
+const EXT_METHODS = {
+  chooser: { label: 'اختيار تطبيق من جهازي' },
+  share:   { label: 'قائمة تطبيقات الجهاز' },
+  youtube: { label: 'يوتيوب' }
+};
+
+function availableExtMethods() {
+  const list = [];
+  if (IS_ANDROID) list.push('chooser');
+  if (navigator.share) list.push('share');
+  list.push('youtube');
+  return list;
+}
+
+function runExtMethod(method, links) {
+  if (method === 'chooser' && IS_ANDROID) {
+    window.location.href = links.android;
+  } else if (method === 'share' && navigator.share) {
+    navigator.share({ title: links.title, url: links.web }).catch(() => {});
+  } else {
+    window.open(links.web, '_blank', 'noopener');
+  }
+}
+
+function openExternalPlayer(epId, sec, event) {
+  if (event) { event.stopPropagation(); event.preventDefault(); }
+  const links = extLinks(epId, sec);
+  if (!links) { alert('لا يتوفر رابط فيديو لهذه الحلقة'); return; }
+  const pref = getExtPlayerPref();
+  if (pref && availableExtMethods().includes(pref)) {
+    runExtMethod(pref, links);
+    showExtToast(pref);
+    return;
+  }
+  showExtModal(links, sec);
+}
+
+function closeExtModal() {
+  document.getElementById('extModal')?.remove();
+}
+
+function showExtModal(links, sec) {
+  closeExtModal();
+  const methods = availableExtMethods();
+  const opts = {
+    chooser: { icon: EXT_ICON, desc: 'يعرض النظام التطبيقات المثبّتة (NewPipe، يوتيوب، ...) مع خيار «مرة واحدة» أو «دائمًا»' },
+    share:   { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>', desc: 'إرسال رابط الدقيقة إلى أي تطبيق مشغّل على جهازك' },
+    youtube: { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>', desc: 'فتح الرابط مباشرة (تطبيق يوتيوب أو المتصفح)' }
+  };
+  const wrap = document.createElement('div');
+  wrap.id = 'extModal';
+  wrap.className = 'ext-modal-backdrop';
+  wrap.onclick = e => { if (e.target === wrap) closeExtModal(); };
+  wrap.innerHTML = `
+    <div class="ext-modal" role="dialog" aria-modal="true">
+      <h3>التشغيل في تطبيق على جهازك</h3>
+      <p class="ext-desc">يُفتح الفيديو في تطبيق مشغّل خارج الموقع ابتداءً من <span class="ext-time">${fmtSec(sec)}</span>. المشغّل الموجود داخل الموقع يبقى كما هو.</p>
+      ${methods.map(m => `
+        <button class="ext-option" data-method="${m}">
+          ${opts[m].icon}
+          <span><strong>${EXT_METHODS[m].label}</strong><small>${opts[m].desc}</small></span>
+        </button>`).join('')}
+      <label class="ext-remember"><input type="checkbox" id="extRemember"> اجعل اختياري هو الافتراضي دائمًا</label>
+      ${IS_ANDROID ? '<p class="ext-note">إذا فُتح يوتيوب مباشرة دون سؤال: الإعدادات ← التطبيقات ← يوتيوب ← «الفتح افتراضيًا» ← إيقاف فتح الروابط المدعومة.</p>' : ''}
+      <button class="ext-cancel" onclick="closeExtModal()">إلغاء</button>
+    </div>`;
+  document.body.appendChild(wrap);
+  wrap.querySelectorAll('.ext-option').forEach(btn => {
+    btn.onclick = () => {
+      const m = btn.dataset.method;
+      if (document.getElementById('extRemember')?.checked) setExtPlayerPref(m);
+      closeExtModal();
+      runExtMethod(m, links);
+    };
+  });
+}
+
+function showExtToast(method) {
+  document.getElementById('extToast')?.remove();
+  const t = document.createElement('div');
+  t.id = 'extToast';
+  t.className = 'ext-toast';
+  t.innerHTML = `<span>يُفتح عبر: ${EXT_METHODS[method]?.label || ''}</span><button type="button">تغيير</button>`;
+  t.querySelector('button').onclick = () => {
+    setExtPlayerPref(null);
+    t.remove();
+  };
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 5000);
+}
+
 // ==================== COPY SINGLE SEGMENT ====================
 function writeToClipboard(text) {
   if (navigator.clipboard && window.isSecureContext) {
@@ -3114,6 +3308,7 @@ function doSearch(fromLive = false) {
                 <button class="timestamp-btn" onclick="event.stopPropagation(); jumpToEpisode(${ep.id}, ${snip.sec})">
                   ${playIcon} ${snip.ts}
                 </button>
+                ${extPlayerBtn(ep.id, snip.sec)}
               </div>
               <div class="snippet-text">${snip.text}...</div>
             </div>
