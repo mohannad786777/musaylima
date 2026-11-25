@@ -194,8 +194,11 @@ body {
   line-height: 1.2;
 }
 .brand-subtitle { font-size: 12px; color: var(--text-secondary); line-height: 1.2; }
-.header-nav { display: flex; align-items: center; gap: 8px; }
+.header-nav { display: flex; align-items: center; justify-content: center; gap: 28px; }
 .nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 14px;
@@ -209,6 +212,34 @@ body {
 }
 .nav-link:hover { color: var(--text-primary); background: var(--bg-subtle); }
 .nav-link.active { color: var(--forest); background: var(--gold-soft); }
+.nav-link svg { width: 18px; height: 18px; flex-shrink: 0; color: var(--gold); }
+.nav-link.active svg { color: var(--forest); }
+.nav-link[hidden] { display: none; }
+@media (min-width: 769px) {
+  .header-inner { display: grid; grid-template-columns: 1fr auto 1fr; }
+  .header-inner > .brand { justify-self: start; }
+  .header-inner > .header-actions { justify-self: end; }
+}
+@media (min-width: 769px) and (max-width: 1100px) {
+  .header-nav { gap: 6px; }
+  .nav-link { padding: 8px 10px; }
+  .header-search-btn span { display: none; }
+}
+
+/* Überschrift über den Suchergebnissen */
+.results-heading {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.results-heading.active { display: flex; }
+.results-heading svg { width: 22px; height: 22px; color: var(--gold); flex-shrink: 0; }
+.results-heading .rq { color: var(--forest); }
 
 /* Header Actions */
 .header-actions {
@@ -1728,8 +1759,9 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
           </div>
         </div>
         <nav class="header-nav">
-          <button class="nav-link active" onclick="goHome()">الرئيسية</button>
-          <button class="nav-link" onclick="openListView()">الحلقات</button>
+          <button class="nav-link active" data-nav="home" onclick="goHome()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>الرئيسية</span></button>
+          <button class="nav-link" data-nav="results" id="navResults" onclick="openResultsView()" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M8 11h6"/><path d="M8 8.5h4"/></svg><span>نتائج البحث</span></button>
+          <button class="nav-link" data-nav="list" onclick="openListView()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h7"/><path d="M9 11h7"/></svg><span>فهرس الحلقات</span></button>
         </nav>
         <div class="header-actions">
           <div class="font-size-controls" dir="ltr" title="حجم الخط"><button class="fs-btn fs-dec" onclick="changeFontScale(-1)" aria-label="تصغير الخط" title="تصغير الخط">A<span>−</span></button><button class="fs-pct" onclick="resetFontScale()" title="إعادة الخط إلى 100%">100%</button><button class="fs-btn fs-inc" onclick="changeFontScale(1)" aria-label="تكبير الخط" title="تكبير الخط">A<span>+</span></button></div>
@@ -1790,6 +1822,7 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
           <div class="search-history-items" id="searchHistoryItems"></div>
         </div>
         
+        <h2 class="results-heading" id="resultsHeading"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M8 11h6"/><path d="M8 8.5h4"/></svg><span>نتائج البحث عن: «<span class="rq" id="resultsHeadingQuery"></span>»</span></h2>
         <div class="results-summary" id="resultsSummary">
           <div class="results-info">
             <div class="results-stat">
@@ -2292,6 +2325,7 @@ function handleSearchResults(data) {
   globalSearchResults = results.map(r => ({ epId: r.id, startSec: r.firstMatchSec }));
   
   document.getElementById('resultsSummary').classList.add('active');
+  onResultsShown();
   document.getElementById('epCount').textContent = totalEpisodes;
   document.getElementById('hitCount').textContent = totalHits;
   document.getElementById('ctaBanner').style.display = results.length > 0 ? 'none' : 'block';
@@ -2503,6 +2537,8 @@ function handleRoute() {
   const hash = window.location.hash || '#search';
   if (hash === '#search' || hash === '' || hash === '#') {
     showSearchView();
+  } else if (hash === '#results') {
+    showResultsView();
   } else if (hash === '#list') {
     showListView();
   } else if (hash.startsWith('#episode/')) {
@@ -2525,8 +2561,10 @@ function navigateTo(route, replace = false) {
 }
 
 // ==================== VIEWS ====================
-function showSearchView() {
+function showSearchView(keepResults = false) {
   cleanup();
+  // Startseite = sauber: Suchbegriff und Ergebnisse leeren
+  if (!keepResults && (hasActiveResults() || document.getElementById('mainSearch')?.value)) clearSearch();
   currentView = 'search';
   currentEpisodeId = null;
   document.getElementById('fullView').style.display = 'none';
@@ -2534,7 +2572,8 @@ function showSearchView() {
   document.getElementById('searchView').style.display = 'block';
   document.querySelector('.site-header')?.style.setProperty('display', '');
   updateNavActive('home');
-  window.scrollTo(0, 0);
+  updateResultsNav();
+  if (!keepResults) window.scrollTo(0, 0);
 }
 
 function showListView() {
@@ -2753,9 +2792,8 @@ function cleanup() {
 }
 
 function updateNavActive(view) {
-  document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-  if (view === 'home') document.querySelector('.nav-link:first-child')?.classList.add('active');
-  else if (view === 'list') document.querySelector('.nav-link:last-child')?.classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(link => link.classList.toggle('active', link.dataset.nav === view));
+  updateResultsNav();
 }
 
 function goHome() { navigateTo('#search'); }
@@ -3385,7 +3423,7 @@ function maybeScrollToResults() {
   if (!scrollToResultsPending) return;
   scrollToResultsPending = false;
   requestAnimationFrame(() => {
-    const target = document.getElementById('resultsSummary');
+    const target = document.getElementById('resultsHeading');
     if (!target) return;
     const header = document.querySelector('.site-header');
     const offset = (header ? header.offsetHeight : 0) + 12;
@@ -3457,6 +3495,7 @@ function doSearch(fromLive = false) {
   globalSearchResults = results.map(r => ({ epId: r.id, startSec: r.firstMatchSec }));
 
   document.getElementById('resultsSummary').classList.add('active');
+  onResultsShown();
   document.getElementById('epCount').textContent = results.length;
   document.getElementById('hitCount').textContent = results.reduce((s, r) => s + r.hits, 0);
   document.getElementById('ctaBanner').style.display = results.length > 0 ? 'none' : 'block';
@@ -3515,7 +3554,56 @@ function clearSearch() {
   document.getElementById('mainSearch').value = '';
   document.getElementById('results').innerHTML = '';
   document.getElementById('resultsSummary').classList.remove('active');
+  document.getElementById('resultsHeading').classList.remove('active');
   document.getElementById('ctaBanner').style.display = 'block';
+  globalSearchQuery = '';
+  globalSearchResults = [];
+  updateResultsNav();
+  if (location.hash === '#results') history.replaceState(null, '', '#search');
+}
+
+// ==================== SEARCH RESULTS VIEW ====================
+let lastSearchQuery = '';
+
+function hasActiveResults() {
+  return document.getElementById('resultsSummary')?.classList.contains('active');
+}
+
+function updateResultsNav() {
+  const nav = document.getElementById('navResults');
+  if (nav) nav.hidden = !(hasActiveResults() || lastSearchQuery);
+}
+
+// Wird nach jedem Anzeigen von Suchergebnissen aufgerufen
+function onResultsShown() {
+  const q = document.getElementById('mainSearch')?.value.trim() || globalSearchQuery || '';
+  lastSearchQuery = q;
+  const hq = document.getElementById('resultsHeadingQuery');
+  if (hq) hq.textContent = q;
+  document.getElementById('resultsHeading')?.classList.add('active');
+  updateResultsNav();
+  // Route auf #results setzen, damit "Zurück" aus einer Folge wieder zu den Ergebnissen führt
+  if (currentView === 'search' && location.hash !== '#results') history.replaceState(null, '', '#results');
+  if (currentView === 'search') updateNavActive('results');
+}
+
+function openResultsView() { navigateTo('#results'); }
+
+function showResultsView() {
+  showSearchView(true);
+  if (!hasActiveResults() && lastSearchQuery) {
+    document.getElementById('mainSearch').value = lastSearchQuery;
+    doSearch(true);
+  }
+  updateNavActive(hasActiveResults() ? 'results' : 'home');
+  requestAnimationFrame(() => {
+    const target = document.getElementById('resultsHeading');
+    if (target && hasActiveResults()) {
+      const header = document.querySelector('.site-header');
+      const top = target.getBoundingClientRect().top + window.scrollY - ((header ? header.offsetHeight : 0) + 12);
+      window.scrollTo({ top, behavior: 'auto' });
+    }
+  });
 }
 
 // ==================== SEARCH HISTORY ====================
