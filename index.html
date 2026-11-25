@@ -1753,7 +1753,7 @@ mark { background: var(--gold); color: var(--forest); padding: 1px 4px; border-r
               رصد الأكاذيب والمغالطات
             </div>
             <h1 class="hero-title">قاعدة بيانات: حلقات مسيلمة العشاب</h1>
-            <p class="hero-subtitle">أرشيف شامل يضم جميع التفريغات النصية لحلقات مسيلمة العشاب (<span class="hero-count" id="totalEpisodes">2,511</span> حلقة و<span class="hero-count" id="totalSegments">205,337</span> مقطعًا نصيًا) لرصد أكاذيبه وتلفيقاته ومغالطاته وتناقضاته، مع تحديد التوقيت بالدقيقة والثانية. التفريغ النصي من تاريخ 04.12.2020 إلى تاريخ 21.11.2026</p>
+            <p class="hero-subtitle">أرشيف شامل يضم جميع التفريغات النصية لحلقات مسيلمة العشاب (<span class="hero-count" id="totalEpisodes">2,517</span> حلقة و<span class="hero-count" id="totalSegments">205,793</span> مقطعًا نصيًا) لرصد أكاذيبه وتلفيقاته ومغالطاته وتناقضاته، مع تحديد التوقيت بالدقيقة والثانية. التفريغ النصي من تاريخ 04.12.2020 إلى تاريخ 24.11.2026</p>
             <div class="search-container">
               <div class="search-form">
                 <div class="search-input-wrapper">
@@ -2376,9 +2376,10 @@ async function checkForUpdates() {
 }
 
 // GZIP-Daten laden mit Fortschritt
-async function loadCompressedData(updateProgress) {
+async function loadCompressedData(updateProgress, version) {
   try {
-    const response = await fetch('data.json.gz');
+    // ?v=<version> umgeht den Service-Worker-Cache, damit neue Daten wirklich geladen werden
+    const response = await fetch('data.json.gz' + (version ? '?v=' + encodeURIComponent(version) : ''));
     if (response.ok) {
       const contentLength = response.headers.get('Content-Length');
       const total = contentLength ? parseInt(contentLength, 10) : 23000000;
@@ -2450,7 +2451,7 @@ async function loadDataWithCache() {
         checkForUpdates().then(async (newVersion) => {
           if (newVersion) {
             console.log('Downloading update in background...');
-            const newData = await loadCompressedData();
+            const newData = await loadCompressedData(null, newVersion.version);
             await saveToIndexedDB(newData, newVersion.version);
             
             // Update Banner anzeigen
@@ -2464,12 +2465,12 @@ async function loadDataWithCache() {
     
     // Erste Laden oder keine Daten in IndexedDB
     updateText('جاري تحميل المكتبة...');
-    const data = await loadCompressedData(updateProgress);
+    const versionResponse = await fetch('version.json?t=' + Date.now()).catch(() => null);
+    const version = (versionResponse && versionResponse.ok) ? (await versionResponse.json()).version : new Date().toISOString().split('T')[0];
+    const data = await loadCompressedData(updateProgress, version);
     
     // In IndexedDB speichern
     updateText('جاري حفظ البيانات...');
-    const versionResponse = await fetch('version.json').catch(() => null);
-    const version = versionResponse ? (await versionResponse.json()).version : new Date().toISOString().split('T')[0];
     
     await saveToIndexedDB(data, version);
     console.log('Saved to IndexedDB');

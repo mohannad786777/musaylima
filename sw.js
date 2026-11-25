@@ -1,5 +1,5 @@
 // Service Worker für Offline-Funktionalität
-const CACHE_NAME = 'musaylima-v6';
+const CACHE_NAME = 'musaylima-v7';
 const STATIC_ASSETS = [
   './musaylima.jpeg',
   './icon-192.png',
@@ -54,6 +54,20 @@ self.addEventListener('fetch', event => {
   
   // data.json.gz - CACHE-FIRST mit Background Update (Stale-While-Revalidate)
   if (url.pathname.endsWith('data.json.gz') || url.pathname.endsWith('data.json')) {
+    // Mit ?v=<version>: neue Datenversion -> immer vom Netz holen und als einzige Kopie cachen
+    if (url.searchParams.has('v')) {
+      const baseKey = new Request(url.origin + url.pathname);
+      event.respondWith(
+        fetch(event.request).then(networkResponse => {
+          if (networkResponse && networkResponse.status === 200) {
+            const copy = networkResponse.clone();
+            caches.open(DATA_CACHE_NAME).then(cache => cache.put(baseKey, copy));
+          }
+          return networkResponse;
+        }).catch(() => caches.open(DATA_CACHE_NAME).then(cache => cache.match(baseKey)))
+      );
+      return;
+    }
     event.respondWith(
       caches.open(DATA_CACHE_NAME).then(cache => {
         return cache.match(event.request).then(cachedResponse => {
