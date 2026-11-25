@@ -3562,9 +3562,26 @@ document.addEventListener('click', e => {
 });
 
 // ==================== EPISODE LIST ====================
+// Datum "TT-MM-JJJJ" (auch mit . oder /) -> sortierbare Zahl JJJJMMTT
+function epDateKey(ep) {
+  const m = String(ep.date || '').match(/(\d{1,2})\D(\d{1,2})\D(\d{4})/);
+  return m ? (+m[3]) * 10000 + (+m[2]) * 100 + (+m[1]) : 0;
+}
+
+// Fihrist: neueste Folge zuerst (nach Datum, bei gleichem Datum höhere Nummer zuerst)
+let sortedListCache = null;
+function getSortedList() {
+  if (!sortedListCache || sortedListCache.source !== DB || sortedListCache.len !== DB.length) {
+    const items = DB.slice().sort((a, b) => (epDateKey(b) - epDateKey(a)) || (b.id - a.id));
+    sortedListCache = { source: DB, len: DB.length, items };
+  }
+  return sortedListCache.items;
+}
+
 function renderList() {
   const filter = document.getElementById('listFilter').value.trim().toLowerCase();
-  let filtered = filter ? DB.filter(ep => String(ep.id).includes(filter) || ep.title.toLowerCase().includes(filter)) : DB;
+  const all = getSortedList();
+  let filtered = filter ? all.filter(ep => String(ep.id).includes(filter) || ep.title.toLowerCase().includes(filter)) : all;
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const start = (listPage - 1) * PAGE_SIZE;
