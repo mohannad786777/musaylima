@@ -26,17 +26,42 @@ let DB = null;          // الحلقات مع نصوص مطبّعة
 let BY_ID = new Map();
 let loading = null;
 
+// ترميز مضغوط: كل حرف (ASCII أو عربي من U+0600 إلى U+067F) في بايت واحد → سلسلة latin1 في V8
+// يقلّل ذاكرة النصوص إلى النصف تقريبًا، فيتسع الأرشيف كله في خادم مجاني بذاكرة 512 ميغابايت
+function pack(s, lossy) {
+  const b = Buffer.allocUnsafe(s.length);
+  for (let i = 0; i < s.length; i++) {
+    const k = s.charCodeAt(i);
+    if (k < 0x80) b[i] = k;
+    else if (k >= 0x0600 && k <= 0x067F) b[i] = k - 0x0600 + 0x80;
+    else if (lossy) b[i] = 0x20;
+    else return null; // حرف خارج النطاق: يُحفظ النص كما هو
+  }
+  return b.toString('latin1');
+}
+function unpack(s) {
+  let out = '';
+  for (let i = 0; i < s.length; i++) {
+    const k = s.charCodeAt(i);
+    out += k < 0x80 ? s[i] : String.fromCharCode(k - 0x80 + 0x0600);
+  }
+  return out;
+}
+
 function normAr(s) {
   if (!s) return '';
-  return s
+  return pack(s
     .replace(/[ً-ٰٟـ​-‏﻿]/g, '')
     .replace(/[أإآٱ]/g, 'ا')
     .replace(/[ؤئ]/g, 'ء')
     .replace(/ة/g, 'ه')
     .replace(/ى/g, 'ي')
     .replace(/\s+/g, ' ')
-    .toLowerCase();
+    .toLowerCase(), true);
 }
+
+const fmtTs = sec => { const t = Math.floor(sec); return [t / 3600, (t % 3600) / 60, t % 60].map(x => String(Math.floor(x)).padStart(2, '0')).join(':'); };
+const segText = s => (s.p ? unpack(s.t) : s.t);
 
 // "DD-MM-YYYY" → رقم YYYYMMDD للمقارنة
 function dateKey(d) {
@@ -55,7 +80,7 @@ async function readRaw() {
     const buf = fs.readFileSync(p);
     return p.endsWith('.gz') ? zlib.gunzipSync(buf) : buf;
   }
-  const url = process.env.DATA_URL;
+  const url = process.env.DATA_URL || 'https://raw.githubusercontent.com/mohannad786777/musaylima/main/data.json.gz';
   if (!url) throw new Error('ملف البيانات غير موجود: ' + p + ' (ضع DATA_PATH أو DATA_URL)');
   log('downloading', url);
   const res = await fetch(url);
@@ -64,21 +89,44 @@ async function readRaw() {
   return buf[0] === 0x1f && buf[1] === 0x8b ? zlib.gunzipSync(buf) : buf;
 }
 
+// يعيد مقاطع Buffer لكل عنصر من المصفوفة الجذرية في ملف JSON
+function* episodeSlices(buf) {
+  let depth = 0, inStr = false, esc = false, start = -1;
+  for (let i = 0; i < buf.length; i++) {
+    const c = buf[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === 0x5C) esc = true;
+      else if (c === 0x22) inStr = false;
+      continue;
+    }
+    if (c === 0x22) inStr = true;
+    else if (c === 0x7B || c === 0x5B) { if (depth === 1 && c === 0x7B) start = i; depth++; }
+    else if (c === 0x7D || c === 0x5D) { depth--; if (depth === 1 && c === 0x7D) yield buf.subarray(start, i + 1); }
+  }
+}
+
 function ensureData() {
   if (DB) return Promise.resolve();
   if (!loading) {
     loading = (async () => {
       const t = Date.now();
-      const raw = JSON.parse((await readRaw()).toString('utf8'));
-      DB = raw.map(ep => ({
-        id: ep.id,
-        title: ep.title,
-        titleNorm: normAr(ep.title),
-        date: ep.date,
-        dk: dateKey(ep.date),
-        url: ep.url,
-        segments: ep.segments.map(s => ({ ts: s.ts, sec: s.sec, txt: s.txt, n: normAr(s.txt) })),
-      }));
+      let buf = await readRaw();
+      DB = [];
+      // تحليل الحلقات واحدةً واحدة من المصفوفة بدل تحويل الملف كله إلى نص دفعةً واحدة (يخفض ذروة الذاكرة)
+      for (const slice of episodeSlices(buf)) {
+        const ep = JSON.parse(slice.toString('utf8'));
+        DB.push({
+          id: ep.id,
+          title: ep.title,
+          titleNorm: normAr(ep.title),
+          date: ep.date,
+          dk: dateKey(ep.date),
+          url: ep.url,
+          segments: ep.segments.map(s => { const pk = pack(s.txt); return { sec: s.sec, t: pk ?? s.txt, p: pk !== null, n: normAr(s.txt) }; }),
+        });
+      }
+      buf = null;
       BY_ID = new Map(DB.map(e => [e.id, e]));
       const segs = DB.reduce((a, e) => a + e.segments.length, 0);
       log(`ready: ${DB.length} episodes, ${segs} segments in ${Date.now() - t}ms`);
@@ -220,9 +268,9 @@ function searchTranscripts(args) {
     episode_id: ep.id,
     episode_title: ep.title,
     date: ep.date,
-    timestamp: s.ts,
+    timestamp: fmtTs(s.sec),
     sec: s.sec,
-    text: s.txt,
+    text: segText(s),
     youtube: link(ep, s.sec),
   }));
 
@@ -263,7 +311,7 @@ function getTranscript(args) {
     total_segments_in_episode: ep.segments.length,
     returned: page.length,
     next_start_sec: next,
-    segments: page.map(s => ({ timestamp: s.ts, sec: s.sec, text: s.txt, youtube: link(ep, s.sec) })),
+    segments: page.map(s => ({ timestamp: fmtTs(s.sec), sec: s.sec, text: segText(s), youtube: link(ep, s.sec) })),
   };
 }
 

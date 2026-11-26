@@ -5,7 +5,7 @@
   "main": "server.js",
   "bin": { "musaylima-mcp": "server.js" },
   "scripts": {
-    "start": "node server.js",
+    "start": "DATA_PATH=/nonexistent node --max-old-space-size=300 server.js",
     "stdio": "node server.js --stdio"
   },
   "engines": { "node": ">=18" },
