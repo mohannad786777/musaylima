@@ -4,3 +4,6 @@ data.min.json
 
 # MCP server (not part of the static site)
 mcp-server/
+
+# Hugging Face Space files (not part of the static site)
+hf-space/

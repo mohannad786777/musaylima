@@ -6,7 +6,7 @@
 //
 // متغيرات البيئة:
 //   PORT       منفذ HTTP (افتراضي 8787)
-//   MCP_TOKEN  رمز سري اختياري. إن وُضع: يُقبل الطلب على /mcp/<الرمز> أو مع ترويسة Authorization: Bearer <الرمز>
+//   MCP_TOKEN  رمز سري اختياري (أو عدة رموز مفصولة بفواصل، رمز لكل شخص). إن وُضع: يُقبل الطلب على /mcp/<الرمز> أو مع ترويسة Authorization: Bearer <الرمز>
 //   DATA_PATH  مسار ملف البيانات (افتراضي ../data.json.gz)
 //   DATA_URL   رابط لتنزيل البيانات إن لم يوجد الملف محليًا
 
@@ -370,7 +370,8 @@ function runStdio() {
 // ==================== HTTP (Streamable HTTP) ====================
 function runHttp() {
   const PORT = +process.env.PORT || 8787;
-  const TOKEN = process.env.MCP_TOKEN || '';
+  const TOKENS = new Set((process.env.MCP_TOKEN || '').split(',').map(t => t.trim()).filter(Boolean));
+  const TOKEN = TOKENS.size > 0;
   const cors = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
@@ -392,7 +393,7 @@ function runHttp() {
     if (parts[0] !== 'mcp') return send(res, 404, { error: 'not found' });
     if (TOKEN) {
       const bearer = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-      if (parts[1] !== TOKEN && bearer !== TOKEN) return send(res, 401, { error: 'unauthorized' });
+      if (!TOKENS.has(parts[1]) && !TOKENS.has(bearer)) return send(res, 401, { error: 'unauthorized' });
     }
     if (req.method === 'GET') return send(res, 405, { error: 'SSE stream not offered; use POST' }, { Allow: 'POST' });
     if (req.method === 'DELETE') return send(res, 200, {});
