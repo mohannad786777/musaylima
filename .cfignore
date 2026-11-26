@@ -1,3 +1,6 @@
 # Exclude large uncompressed data files for Cloudflare Pages (25MB limit)
 data.json
 data.min.json
+
+# MCP server (not part of the static site)
+mcp-server/

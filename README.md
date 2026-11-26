@@ -43,6 +43,10 @@ musaylima/
 └── icon-512.png    # أيقونة PWA (512x512)
 ```
 
+## 🔌 خادم MCP للذكاء الاصطناعي
+
+يمكن ربط الأرشيف بـ Claude أو ChatGPT أو Cursor ليبحث فيه مباشرة. التفاصيل في [`mcp-server/README.md`](mcp-server/README.md).
+
 ## 🛠️ التقنيات المستخدمة
 
 - **HTML5** / **CSS3** / **JavaScript** (Vanilla)
